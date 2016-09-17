@@ -1,0 +1,48 @@
+#include <stdio.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <string.h>
+
+int wc(int argc, char **args)
+{
+    if (argc < 2) {
+        fprintf(stderr, "Usage: %s <file>\n", args[0]);
+        return -1;
+    }
+
+    char buf[512];
+    int char_num = 0, word_num = 0, line_num = 0;
+    int i, n, in_word = 0;
+    int fd;
+
+    fd = open(args[1], O_RDONLY);
+    if (fd == -1) {
+        perror("open");
+        return -1;
+    }
+
+    while ((n = read(fd, buf, sizeof(buf))) > 0)
+        for (i = 0; i < n; i++) {
+            char_num++;
+            if (buf[i] == '\n')
+                line_num++;
+            if (strchr(" \r\t\n\v", buf[i]))
+                in_word = 0;
+            else if (!in_word) {
+                word_num++;
+                in_word = 1;
+            }
+        }
+
+    if (close(fd) == -1) {
+        perror("close");
+        return -1;
+    }
+
+    printf("line: %d  word: %d  char: %d  %s\n",
+            line_num, word_num, char_num, args[1]);
+
+    return 0;
+}

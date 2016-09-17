@@ -7,7 +7,8 @@ int my_kill(int argc, char **args)
 {
     if (argc < 2) {
         fprintf(stderr,
-                "Usage: %s -<sig (default as TERM, 15)> <pid>\n", args[0]);
+                "Usage: %s -<sig (default as TERM, 15)> <pid>\n",
+                args[0]);
         return -1;
     }
 

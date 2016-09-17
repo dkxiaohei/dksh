@@ -28,6 +28,7 @@ int wc(int argc, char **args)
             char_num++;
             if (buf[i] == '\n')
                 line_num++;
+
             if (strchr(" \r\t\n\v", buf[i]))
                 in_word = 0;
             else if (!in_word) {

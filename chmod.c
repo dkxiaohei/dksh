@@ -7,7 +7,8 @@ int my_chmod(int argc, char **args)
 {
     if (argc < 3 || !isdigit(args[1][0])) {
         fprintf(stderr,
-                "Usage: %s <mode(such as 664)> <file>\n", args[0]);
+                "Usage: %s <mode(such as 664)> <file>\n",
+                args[0]);
         return -1;
     }
 

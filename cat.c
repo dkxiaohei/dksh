@@ -15,7 +15,8 @@ int cat(int argc, char **args)
     int fd, ret;
     int return_error = FALSE;
 
-    if (argc == 1) {    // if no files specified, then use STDIN
+    // if no files specified, then use STDIN
+    if (argc == 1) {
         fd = 0;
 
         while ((ret = read(fd, buf, sizeof(buf))) > 0)
@@ -30,13 +31,15 @@ int cat(int argc, char **args)
 
             if (fd == -1) {
                 fprintf(stderr,
-                        "cat: %s: No such file or directory\n", *args);
+                        "cat: %s: No such file or directory\n",
+                        *args);
                 return_error = TRUE;
                 continue;    // try the next file (if any)
             }
 
             while ((ret = read(fd, buf, sizeof(buf))) > 0)
-                if (write(1, buf, ret) < 0) {    // write to STDOUT
+                // write to STDOUT
+                if (write(1, buf, ret) < 0) {
                     perror("write");
                     return -1;
                 }

@@ -4,7 +4,8 @@
 
 int cd(char **args)
 {
-    static char *oldpwd = NULL;    // static local variable
+    // static local variable, to preserve the old pwd
+    static char *oldpwd = NULL;
     char *tmp = NULL;
     tmp = getcwd(NULL, 0);
 
@@ -25,7 +26,8 @@ int cd(char **args)
     else {
         if (chdir(args[1]) == -1) {
             fprintf(stderr,
-                    "cd: %s: No such file or directory\n", args[1]);
+                    "cd: %s: No such file or directory\n",
+                    args[1]);
             return -1;
         }
     }

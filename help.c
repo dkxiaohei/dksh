@@ -2,7 +2,7 @@
 
 int help(void)
 {
-    printf("--- BUILT-IN COMMANDS ---\n"
+    printf("\n--- BUILT-IN COMMANDS (19 + 1) ---\n"
             "help\n"
             "exit (Ctrl-D)\n"
             "pwd\n"
@@ -10,7 +10,7 @@ int help(void)
             "echo ($?)\n"
             "cat\n"
             "more\n"
-            "ls (-a -d -i -l | -adil)\n"
+            "ls (-a -d -i -l)\n"
             "mkdir\n"
             "rmdir\n"
             "rm\n"
@@ -21,7 +21,10 @@ int help(void)
             "kill (-sig)\n"
             "history\n"
             "who\n"
-            "./<user's program>\n");
+            "grep (-n -v | -nv)\n"
+            "mv\n"
+            "tee (-a)\n"
+            "./<user's program>\n\n");
 
     return 0;
 }

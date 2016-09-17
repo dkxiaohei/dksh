@@ -47,6 +47,7 @@ int more(int argc, char **args)
         FILE *fp_tty_in, *fp_tty_out;
         fp_tty_in = fopen("/dev/tty", "r");
         fp_tty_out = fopen("/dev/tty", "w");
+
         struct termios settings, initials;
         tcgetattr(STDIN_FILENO, &initials);
         settings = initials;

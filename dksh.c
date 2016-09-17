@@ -19,12 +19,14 @@ static char input[LINEMAX] = {'\0'};
 static char *args[ARGMAX] = {NULL};
 static int return_value = 0;    // echo $?
 static char *hist[HISTMAX] = {NULL};
+static int background = FALSE;
 
 /* prototypes for file static functions */
 static int get_args(char *);    // parse the input to get args
 static void free_hist(char **);    // free the memory of hist
 static void free_args(char **);    // free the memory of args
-static void built_in(int, char **);    // mysh built-in commands
+static void built_in(int, char **);    // dksh built-in commands
+static void ignore_signal(void);    // ignore some signals
 
 /* prototypes for extern functions */
 int pwd(void);
@@ -41,7 +43,10 @@ int wc(int, char **);
 int my_kill(int, char **);
 int history(char **);
 int who(int, char **);
-int help(void);    // list the commands that mysh supports
+int help(void);    // list the commands that dksh supports
+int grep(int, char **);
+int mv(int, char **);
+int tee(int, char **);
 int my_time(int, char **);
 int more(int, char **);
 void my_exit(void);
@@ -49,47 +54,41 @@ void my_exit(void);
 /* main */
 int main(void)
 {
-    // pipe (IPC): child process passes the return_value to parent process
-    int pipefd[2];
-    char pipech;    // represent the return_value, 0 or 1
-
-    if (pipe(pipefd) == -1) {
-        perror("pipe");
-        exit(EXIT_FAILURE);
-    }
-
     char *prompt = NULL;
     char hostname[32] = {'\0'};
     gethostname(hostname, (size_t)32);
 
     uid_t uid;
-    prompt = (uid = getuid()) == 0 ? "# " : "$ ";    // root (#) or normal ($)
+    // root (#) or normal ($)
+    prompt = (uid = getuid()) == 0 ? "# " : "$ ";
     setuid(uid);
     setgid(getgid());
+
+    // pipe (IPC): child process passes the return_value to parent process
+    int pipefd[2];
+    char pipech;    // represent the return_value, 0 or 1
+    if (pipe(pipefd) == -1) {
+        perror("pipe");
+        exit(EXIT_FAILURE);
+    }
 
     int hist_count = 0;
     int same_command = FALSE;
 
     /* main loop */
     while (1) {
-        /* ignore SIGINT (Ctrl-C), SIGQUIT (Ctrl-\) and SIGTSTP (Ctrl-Z) */
-        if (signal(SIGINT, SIG_IGN) == SIG_ERR) {
-            fprintf(stderr, "Cannot ignore SIGINT!\n");
-            exit(EXIT_FAILURE);
-        }
-        if (signal(SIGQUIT, SIG_IGN) == SIG_ERR) {
-            fprintf(stderr, "Cannot ignore SIGQUIT!\n");
-            exit(EXIT_FAILURE);
-        }
-        if (signal(SIGTSTP, SIG_IGN) == SIG_ERR) {
-            fprintf(stderr, "Cannot ignore SIGTSTP!\n");
-            exit(EXIT_FAILURE);
-        }
+        // ignore SIGINT (Ctrl-C), SIGQUIT (Ctrl-\) and SIGTSTP (Ctrl-Z)
+        ignore_signal();
+
+        // TODO
+        // handle SIGCHLD here
+        // get noted about the termination of the background command
 
         /* print the prompt */
         char *pwd = getcwd(NULL, 0);
         char *tmp = strdup(pwd);
-        printf("[%s@%s:%s] %s", getenv("USER"), hostname, basename(tmp), prompt);
+        printf("[%s@%s:%s] %s",
+                getenv("USER"), hostname, basename(tmp), prompt);
         free(pwd);
 
         /* Ctrl-D to exit */
@@ -111,15 +110,12 @@ int main(void)
             same_command = TRUE;
         else
             same_command = FALSE;
-
         if (!same_command) {
             hist[hist_count] = malloc((strlen(input) + 1) * sizeof(char));
-
             if (!hist[hist_count]) {
                 perror("malloc");
                 exit(EXIT_FAILURE);
             }
-
             strcpy(hist[hist_count], input);
             ++hist_count;
         }
@@ -130,7 +126,8 @@ int main(void)
         /* run the command */
         pid_t pid;
         if (args[0]) {
-            // if the command doesn't start with '-' or '.', then it's a built-in command
+            // if the command doesn't start with '-' or '.'
+            // then it's a built-in command, otherwise fork and execvp
             if (args[0][0] != '-' && args[0][0] != '.')
                 built_in(argc, args);
             else if ((pid = fork()) < 0) {    // if fork fails
@@ -144,9 +141,9 @@ int main(void)
                     // &args[0][1]: excluding the preceding '-'
                     if (execvp(&args[0][1], args) == -1) {
                         write(pipefd[1], "1", 1);
-                        close(pipefd[1]);          // reader will see EOF
-                        fprintf(stderr, "bash: %s: command not found\n", &args[0][1]);
-
+                        close(pipefd[1]);    // reader will see EOF
+                        fprintf(stderr, "bash: %s: command not found\n",
+                                &args[0][1]);
                         // exit() is unreliable here, so _exit must be used
                         _exit(EXIT_FAILURE);
                     }
@@ -155,12 +152,13 @@ int main(void)
                         close(pipefd[1]);
                     }
                 }
-                else if (args[0][0] == '.') {    // user's program ("./<program name>")
+                // user's program ("./<program name>")
+                else if (args[0][0] == '.') {
                     if (execvp(args[0], args) == -1) {
                         write(pipefd[1], "1", 1);
-                        close(pipefd[1]);          // reader will see EOF
-                        fprintf(stderr, "bash: %s: command not found\n", args[0]);
-
+                        close(pipefd[1]);    // reader will see EOF
+                        fprintf(stderr, "bash: %s: command not found\n",
+                                args[0]);
                         // exit() is unreliable here, so _exit must be used
                         _exit(EXIT_FAILURE);
                     }
@@ -176,6 +174,7 @@ int main(void)
                 close(pipefd[1]);    // close unused write end of pipe
                 read(pipefd[0], &pipech, 1);
                 close(pipefd[0]);
+
                 return_value = (pipech == '1') ? -1 : 0;
 
                 wait(0);    // wait for child
@@ -183,7 +182,7 @@ int main(void)
         }
 
         free_args(args);
-    }    // end while (1)
+    }    // end while (1), the main loop
 
     return 0;
 }
@@ -212,10 +211,9 @@ static int get_args(char *input)
         // suppose arguments are split by blank(s)
         while (j < LINEMAX - 1 && *input != ' ' && *input != '\n')
             args[i][j++] = *input++;
-
         args[i][j] = '\0';    // terminate each argument with '\0'
-        i++;
 
+        i++;
         if (i > ARGMAX - 1) {    // too many args
             free_args(args);
             return 0;
@@ -228,7 +226,6 @@ static int get_args(char *input)
 static void free_hist(char **hist)
 {
     int i;
-
     for (i = 0; hist[i] != NULL; i++) {
         free(hist[i]);
         hist[i] = NULL;
@@ -238,7 +235,6 @@ static void free_hist(char **hist)
 static void free_args(char **args)
 {
     int i;
-
     for (i = 0; i < ARGMAX; i++)
         if (args[i]) {
             free(args[i]);
@@ -283,13 +279,36 @@ static void built_in(int argc, char **args)
         return_value = history(hist);
     else if (strcmp(args[0], "who") == 0)
         return_value = who(argc, args);
+    else if (strcmp(args[0], "grep") == 0)
+        return_value = grep(argc, args);
+    else if (strcmp(args[0], "mv") == 0)
+        return_value = mv(argc, args);
+    else if (strcmp(args[0], "tee") == 0)
+        return_value = tee(argc, args);
     else if (strcmp(args[0], "time") == 0)
         return_value = my_time(argc, args);
     else if (strcmp(args[0], "more") == 0)
         return_value = more(argc, args);
     else {
         // if the command isn't built-in, then try execvp next time
-        printf("mysh: %s: command not found...(try '-%s')\n", args[0], args[0]);
+        printf("dksh: %s: command not found...(try '-%s')\n",
+                args[0], args[0]);
         return_value = -1;
+    }
+}
+
+static void ignore_signal()
+{
+    if (signal(SIGINT, SIG_IGN) == SIG_ERR) {
+        fprintf(stderr, "Cannot ignore SIGINT!\n");
+        exit(EXIT_FAILURE);
+    }
+    if (signal(SIGQUIT, SIG_IGN) == SIG_ERR) {
+        fprintf(stderr, "Cannot ignore SIGQUIT!\n");
+        exit(EXIT_FAILURE);
+    }
+    if (signal(SIGTSTP, SIG_IGN) == SIG_ERR) {
+        fprintf(stderr, "Cannot ignore SIGTSTP!\n");
+        exit(EXIT_FAILURE);
     }
 }

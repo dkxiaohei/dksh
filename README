@@ -1,37 +1,41 @@
 --- dksh: a mini-shell ---
 
 I. dksh commands:
-    1. ls (-a -d -i -l | -adil)
-    2. echo ($?)
+    1. ls(-a -d -i -l | -adil)
+    2. echo($?)
     3. cat
     4. mkdir
     5. rmdir
     6. rm
-    7. cd (-)
+    7. cd(-)
     8. chmod
     9. pwd
     10. wc
     11. date
-    12. exit (Ctrl-D)
+    12. exit(Ctrl-D)
     13. help
     14. kill
     15. who
     16. history
     17. ./<user's program>
-    18. time
-    19. more
+    18. grep(-n -v | -nv)
+    19. mv
+    20. tee(-a)
+    21. time
+    22. more
+
     (PS. Putting a '-' before a command will call the Bash built-in commands.)
 
 II. Compile:
     1. make
-    2. make clean (clean the ".o" files)
-    3. make cleanall (clean all but the ".c" files)
+    2. make clean(clean the ".o" files)
+    3. make cleanall(clean all but the ".c" files)
 
 III. Manuel:
     1. ls:
         (1) ls <directory(ies) | file(s)>
         (2) ls -a <directory(ies) | file(s)>: including the hidden files
-        (3) ls -d <directory(ies) | file(s)>: do not scan the directory(ies)
+        (3) ls -d <directory(ies) | file(s)>: do not scan the directory, merely print
         (4) ls -i <directory(ies) | file(s)>: show inode
         (5) ls -l <directory(ies) | file(s)>: show details
 
@@ -41,7 +45,6 @@ III. Manuel:
 
     3. cat:
         (1) cat <file(s)>
-        (2) cat: read from STDIN
 
     4. mkdir:
         (1) mkdir <directory>
@@ -58,7 +61,7 @@ III. Manuel:
         (3) cd -: chdir to the last directory
 
     8. chmod:
-        (1) chmod <mode (such as 664)> <file>
+        (1) chmod <mode(such as 664)> <file>
 
     9. pwd:
         (1) pwd
@@ -77,7 +80,7 @@ III. Manuel:
         (1) help: list the commands that dksh supports
 
     14. kill:
-        (1) kill <pid>: default signal is TERM (9)
+        (1) kill <pid>: default signal is TERM(9)
         (2) kill -<sig> <pid>: specify a sig
 
     15. who:
@@ -89,8 +92,21 @@ III. Manuel:
     17. ./<user's program>:
         (1) ./<user's program>
 
-    18. time:
+    18. grep:
+        (1) grep <pattern> <file (if not specified, STDIN is used)>
+        (2) grep -n <pattern> <file>: show the line number
+        (3) grep -v <pattern> <file>: find the unmatched lines
+        (4) grep -nv <pattern> <file>
+
+    19. mv:
+        (1) mv <oldpath> <newpath>
+
+    20. tee:
+        (1) tee <file (if not specified, STDIN is used)>
+        (2) tee -a <file>: append mode rather than truncate mode
+
+    21. time:
         (1) time <command>: run programs and summarize system resource usage
 
-    19. more:
+    22. more:
         (1) more <file>: file perusal filter for crt viewing

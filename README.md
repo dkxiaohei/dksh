@@ -1,37 +1,40 @@
---- dksh: a mini-shell ---
+# dksh: a rudimentary shell
 
-I. dksh commands:
-    1. ls(-a -d -i -l | -adil)
-    2. echo($?)
+### dksh commands:
+
+    1. ls (-a -d -i -l | -adil)
+    2. echo ($?)
     3. cat
     4. mkdir
     5. rmdir
     6. rm
-    7. cd(-)
+    7. cd (-)
     8. chmod
     9. pwd
     10. wc
     11. date
-    12. exit(Ctrl-D)
+    12. exit (Ctrl-D)
     13. help
     14. kill
     15. who
     16. history
     17. ./<user's program>
-    18. grep(-n -v | -nv)
+    18. grep (-n -v | -nv)
     19. mv
-    20. tee(-a)
+    20. tee (-a)
     21. time
     22. more
 
     (PS. Putting a '-' before a command will call the Bash built-in commands.)
 
-II. Compile:
-    1. make
-    2. make clean(clean the ".o" files)
-    3. make cleanall(clean all but the ".c" files)
+### Compile:
 
-III. Manuel:
+    1. make
+    2. make clean (clean the ".o" files)
+    3. make cleanall (clean all but the ".c" files)
+
+### Manuel:
+
     1. ls:
         (1) ls <directory(ies) | file(s)>
         (2) ls -a <directory(ies) | file(s)>: including the hidden files
@@ -61,7 +64,7 @@ III. Manuel:
         (3) cd -: chdir to the last directory
 
     8. chmod:
-        (1) chmod <mode(such as 664)> <file>
+        (1) chmod <mode (such as 664)> <file>
 
     9. pwd:
         (1) pwd
@@ -80,7 +83,7 @@ III. Manuel:
         (1) help: list the commands that dksh supports
 
     14. kill:
-        (1) kill <pid>: default signal is TERM(9)
+        (1) kill <pid>: default signal is TERM (9)
         (2) kill -<sig> <pid>: specify a sig
 
     15. who:
@@ -110,3 +113,4 @@ III. Manuel:
 
     22. more:
         (1) more <file>: file perusal filter for crt viewing
+

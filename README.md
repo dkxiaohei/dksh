@@ -29,9 +29,8 @@
 
 ### Compile:
 
-    1. make
-    2. make clean (clean the ".o" files)
-    3. make cleanall (clean all but the ".c" files)
+    1. make (generate the target 'dksh')
+    2. make clean (delete the target 'dksh')
 
 ### Manuel:
 

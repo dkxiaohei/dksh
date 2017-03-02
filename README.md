@@ -32,7 +32,7 @@
     1. make (generate the target 'dksh')
     2. make clean (delete the target 'dksh')
 
-### Manuel:
+### Manual:
 
     1. ls:
         (1) ls <directory(ies) | file(s)>
@@ -83,13 +83,13 @@
 
     14. kill:
         (1) kill <pid>: default signal is TERM (9)
-        (2) kill -<sig> <pid>: specify a sig
+        (2) kill -<sig (such as 15)> <pid>: specify a signal
 
     15. who:
         (1) who: show who is logged on
 
     16. history:
-        (1) history: show the commands that have been inputed
+        (1) history: show the commands that have been inputted
 
     17. ./<user's program>:
         (1) ./<user's program>

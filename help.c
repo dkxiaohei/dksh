@@ -2,7 +2,7 @@
 
 int help(void)
 {
-    printf("\n--- BUILT-IN COMMANDS (19 + 1) ---\n"
+    printf("\n--- dksh commands (21 + 1) ---\n"
             "help\n"
             "exit (Ctrl-D)\n"
             "pwd\n"
@@ -10,15 +10,15 @@ int help(void)
             "echo ($?)\n"
             "cat\n"
             "more\n"
-            "ls (-a -d -i -l)\n"
+            "ls (-a -d -i -l | -adil)\n"
             "mkdir\n"
             "rmdir\n"
             "rm\n"
             "date\n"
             "time\n"
             "chmod\n"
-            "wc\n"
-            "kill (-sig)\n"
+            "wc (-)\n"
+            "kill (-signum)\n"
             "history\n"
             "who\n"
             "grep (-n -v | -nv)\n"

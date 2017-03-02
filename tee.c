@@ -33,6 +33,7 @@ int tee(int argc, char **args)
             if (!fd[i]) {
                 fprintf(stderr, "tee: %s: No such file or directory\n",
                         *args);
+                free(fd);
                 return -1;
             }
         }
@@ -42,6 +43,7 @@ int tee(int argc, char **args)
         for (i = 0; i < argc; i++)
             if (write(fd[i], buf, ret) < 0) {
                 perror("write");
+                free(fd);
                 return -1;
             }
         memset(buf, 0, sizeof(buf));
@@ -51,8 +53,10 @@ int tee(int argc, char **args)
         for (i = 1; i < argc; i++)    // excluding STDIN (0)
             if (close(fd[i]) == -1) {
                 perror("close");
+                free(fd);
                 return -1;
             }
 
+    free(fd);
     return 0;
 }

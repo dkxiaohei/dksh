@@ -1,4 +1,6 @@
-# dksh: a rudimentary shell
+## dksh: a rudimentary shell
+
+This repository is inspired by [Yash: Yet another shell](https://www.samiam.org/software/yash.html)
 
 ### dksh commands:
 

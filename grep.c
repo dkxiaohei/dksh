@@ -10,7 +10,7 @@ int grep(int argc, char **args)
     // calloc will initialize the memory to zero
     char *buf = calloc(BUFSIZE, sizeof(char));
     long lineno = 0;
-    int c, except = 0, number = 0, found = 0;
+    int c, except = 0, number = 0, count_only = 0, found = 0;
     // used as the 2nd parameter of getline
     size_t tmp = BUFSIZE;
     FILE *fs;
@@ -29,6 +29,8 @@ int grep(int argc, char **args)
                 // prefix each line of output with the 1-based line number
                 // within its input file
                 case 'n':  number = 1;  break;
+                // only a count of selected lines is written to standard output
+                case 'c':  count_only = 1;  break;
                 default:  printf("grep: illegal option %c\n", c);
                           argc = 0;
                           found = -1;
@@ -57,14 +59,19 @@ int grep(int argc, char **args)
         // kind of tricky
         if((strstr(buf, *args) != NULL) != except)
         {
-            if(number)
-                printf("%ld:", lineno);
-            printf("%s", buf);
+            if (!count_only) {
+                if(number)
+                    printf("%ld:", lineno);
+                printf("%s", buf);
+            }
             found++;
         }
         // clear buf before reading the next line
         memset(buf, 0, BUFSIZE);
     }
+
+    if (count_only)
+        printf("%d\n", found);
 
     if (buf)
         free(buf);

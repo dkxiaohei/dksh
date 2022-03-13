@@ -21,7 +21,7 @@ This repository is inspired by [Yash: Yet another shell](https://www.samiam.org/
     15. who
     16. history
     17. more
-    18. grep (-n -v | -nv)
+    18. grep (-v -n -c | -vnc)
     19. mv
     20. tee (-a)
     21. time
@@ -100,9 +100,10 @@ This repository is inspired by [Yash: Yet another shell](https://www.samiam.org/
 
     18. grep:
         (1) grep <pattern> <file (if not specified, STDIN is used)>
-        (2) grep -n <pattern> <file>: show the line number
-        (3) grep -v <pattern> <file>: find the unmatched lines
-        (4) grep -nv <pattern> <file>
+        (2) grep -v <pattern> <file>: find the unmatched lines
+        (3) grep -n <pattern> <file>: show the line number
+        (4) grep -c <pattern> <file>: only a count of selected lines is written to standard output
+        (5) grep -vnc <pattern> <file>
 
     19. mv:
         (1) mv <oldpath> <newpath>

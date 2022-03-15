@@ -1,5 +1,5 @@
 CC = gcc
-CFLAGS = -Wall
+CFLAGS = -ansi -Wall
 
 object = *.c
 target = dksh

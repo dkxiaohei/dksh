@@ -5,12 +5,15 @@
 
 #define BUFSIZE 512
 
+typedef int bool;
+
 int grep(int argc, char **args)
 {
     // calloc will initialize the memory to zero
     char *buf = calloc(BUFSIZE, sizeof(char));
     long lineno = 0;
-    int c, except = 0, number = 0, count_only = 0, found = 0;
+    int c, found = 0, max_count = -1;
+    bool except = 0, number = 0, count_only = 0;
     // used as the 2nd parameter of getline
     size_t tmp = BUFSIZE;
     FILE *fs;
@@ -19,9 +22,9 @@ int grep(int argc, char **args)
     while(--argc > 0 && (*++args)[0] == '-') {
         // prevent the value of args[0] (which is a pointer)
         // from being changed
-        char *save_args_0 = args[0];
+        char *saved_args_0 = args[0];
 
-        while((c = *++save_args_0))
+        while((c = *++saved_args_0))
             switch(c)
             {
                 // invert the sense of matching, to select non-matching lines
@@ -31,6 +34,8 @@ int grep(int argc, char **args)
                 case 'n':  number = 1;  break;
                 // only a count of selected lines is written to standard output
                 case 'c':  count_only = 1;  break;
+                // stop reading a file after max_count matching lines
+                case 'm':  max_count = atoi(++saved_args_0);  break;
                 default:  printf("grep: illegal option %c\n", c);
                           argc = 0;
                           found = -1;
@@ -55,7 +60,11 @@ int grep(int argc, char **args)
 
     // <stdio.h>: ssize_t getline(char **lineptr, size_t *n, FILE *stream);
     while (getline(&buf, &tmp, fs) > 0) {
+        if (max_count >= 0 && found >= max_count)
+            break;
+
         lineno++;
+
         // kind of tricky
         if((strstr(buf, *args) != NULL) != except)
         {

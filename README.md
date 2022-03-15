@@ -21,7 +21,7 @@ This repository is inspired by [Yash: Yet another shell](https://www.samiam.org/
     15. who
     16. history
     17. more
-    18. grep (-v -n -c | -vnc)
+    18. grep (-v -n -c -m | -vncm)
     19. mv
     20. tee (-a)
     21. time
@@ -30,6 +30,8 @@ This repository is inspired by [Yash: Yet another shell](https://www.samiam.org/
     (PS. Putting a '-' before a command will call the Bash built-in commands.)
 
 ### Compile:
+
+This repository has been tested on Ubuntu and CentOS. It is currently not compatible with macOS.
 
     1. make (generate the target 'dksh')
     2. make clean (delete the target 'dksh')
@@ -103,7 +105,8 @@ This repository is inspired by [Yash: Yet another shell](https://www.samiam.org/
         (2) grep -v <pattern> <file>: find the unmatched lines
         (3) grep -n <pattern> <file>: show the line number
         (4) grep -c <pattern> <file>: only a count of selected lines is written to standard output
-        (5) grep -vnc <pattern> <file>
+        (5) grep -m <NUM> <pattern> <file>: stop reading a file after NUM matching lines
+        (6) grep -vncm <NUM> <pattern> <file>
 
     19. mv:
         (1) mv <oldpath> <newpath>

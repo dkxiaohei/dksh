@@ -19,7 +19,7 @@ static char input[LINEMAX] = {'\0'};
 static char *args[ARGMAX] = {NULL};
 static int return_value = 0;    // echo $?
 static char *hist[HISTMAX] = {NULL};
-static int background = FALSE;
+// static int background = FALSE;
 
 /* prototypes for file static functions */
 static int get_args(char *);    // parse the input to get args

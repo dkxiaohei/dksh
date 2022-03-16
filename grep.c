@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <ctype.h>
 
 #define BUFSIZE 512
 
@@ -35,7 +36,25 @@ int grep(int argc, char **args)
                 // only a count of selected lines is written to standard output
                 case 'c':  count_only = 1;  break;
                 // stop reading a file after max_count matching lines
-                case 'm':  max_count = atoi(++saved_args_0);  break;
+                case 'm':  if (*(saved_args_0 + 1) != '\0') {
+                               if (!isdigit(*(saved_args_0 + 1))) {
+                                   printf("grep: invalid max count\n");
+                                   return -1;
+                               }
+                               max_count = atoi(saved_args_0 + 1);
+                               // step over the NUM after '-m'
+                               while (*(++saved_args_0 + 1) != '\0')
+                                   ;
+                           } else {
+                               if (!isdigit(args[1][0])) {
+                                   printf("grep: invalid max count\n");
+                                   return -1;
+                               }
+                               max_count = atoi(*++args);
+                               // step over the NUM after '-m'
+                               --argc;
+                           }
+                           break;
                 default:  printf("grep: illegal option %c\n", c);
                           argc = 0;
                           found = -1;
@@ -45,7 +64,7 @@ int grep(int argc, char **args)
 
     // argc and args have been changed through the while body
     if(argc != 1 && argc != 2) {
-        printf("Usage: grep -v -n pattern [file]\n");
+        printf("Usage: grep -v -n -c -m NUM pattern [file]\n");
         return -1;
     }
     else if (argc == 1)    // if no file specified, then use STDIN

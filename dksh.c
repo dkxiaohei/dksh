@@ -23,8 +23,9 @@ static char *hist[HISTMAX] = {NULL};
 
 /* prototypes for file static functions */
 static int get_args(char *);    // parse the input to get args
-static void free_hist(char **);    // free the memory of hist
 static void free_args(char **);    // free the memory of args
+static void free_hist(char **);    // free the memory of hist
+static void clean_up();    // free the memory
 static void built_in(int, char **);    // dksh built-in commands
 static void ignore_signal(void);    // ignore some signals
 
@@ -86,15 +87,15 @@ int main(void)
 
         /* print the prompt */
         char *pwd = getcwd(NULL, 0);
-        char *tmp = strdup(pwd);
+        char *tmp_pwd = strdup(pwd);
         printf("[%s@%s:%s] %s",
-                getenv("USER"), hostname, basename(tmp), prompt);
+                getenv("USER"), hostname, basename(tmp_pwd), prompt);
         free(pwd);
 
         /* Ctrl-D to exit */
         int ch = fgetc(stdin);
         if (ch == EOF) {
-            free_hist(hist);
+            clean_up();
             putchar(10);
             my_exit();
         }
@@ -111,13 +112,25 @@ int main(void)
         else
             same_command = FALSE;
         if (!same_command) {
-            hist[hist_count] = malloc((strlen(input) + 1) * sizeof(char));
             if (!hist[hist_count]) {
-                perror("malloc");
-                exit(EXIT_FAILURE);
+                hist[hist_count] = malloc((strlen(input) + 1) * sizeof(char));
+                if (!hist[hist_count]) {
+                    perror("malloc");
+                    clean_up();
+                    exit(EXIT_FAILURE);
+                }
+            } else {
+                char *tmp_hist = hist[hist_count];
+                hist[hist_count] = realloc(tmp_hist, (strlen(input) + 1) * sizeof(char));
+                if (!hist[hist_count]) {
+                    perror("realloc");
+                    free(tmp_hist);
+                    clean_up();
+                    exit(EXIT_FAILURE);
+                }
             }
             strcpy(hist[hist_count], input);
-            ++hist_count;
+            hist_count = (hist_count + 1) % HISTMAX;
         }
 
         // argc is the number of arguments (including the command itself)
@@ -132,6 +145,7 @@ int main(void)
                 built_in(argc, args);
             else if ((pid = fork()) < 0) {    // if fork fails
                 perror("fork");
+                clean_up();
                 exit(EXIT_FAILURE);
             }
             else if (pid == 0) {    // child process
@@ -223,15 +237,6 @@ static int get_args(char *input)
     return i;    // return the number of arguments
 }
 
-static void free_hist(char **hist)
-{
-    int i;
-    for (i = 0; hist[i] != NULL; i++) {
-        free(hist[i]);
-        hist[i] = NULL;
-    }
-}
-
 static void free_args(char **args)
 {
     int i;
@@ -242,13 +247,26 @@ static void free_args(char **args)
         }
 }
 
+static void free_hist(char **hist)
+{
+    int i;
+    for (i = 0; hist[i] != NULL; i++) {
+        free(hist[i]);
+        hist[i] = NULL;
+    }
+}
+
+static void clean_up() {
+    free_args(args);
+    free_hist(hist);
+}
+
 static void built_in(int argc, char **args)
 {
     if (strcmp(args[0], "help") == 0)
         return_value = help();
     else if (strcmp(args[0], "exit") == 0) {
-        free_args(args);
-        free_hist(hist);
+        clean_up();
         my_exit();
     }
     else if (strcmp(args[0], "pwd") == 0)

@@ -14,10 +14,11 @@ int grep(int argc, char **args)
     char *buf = calloc(BUFSIZE, sizeof(char));
     long lineno = 0;
     int c, found = 0, max_count = -1;
-    bool except = 0, number = 0, count_only = 0;
+    bool except = 0, number = 0, count_only = 0, print_filename = 0;
     // used as the 2nd parameter of getline
     size_t tmp = BUFSIZE;
     FILE *fs;
+    char *filename;
 
     // parse the options
     while(--argc > 0 && (*++args)[0] == '-') {
@@ -35,6 +36,10 @@ int grep(int argc, char **args)
                 case 'n':  number = 1;  break;
                 // only a count of selected lines is written to standard output
                 case 'c':  count_only = 1;  break;
+                // always print filename headers with output lines
+                case 'H':  print_filename = 1;  break;
+                // never print filename headers (i.e., filenames) with output lines
+                case 'h':  print_filename = 0;  break;
                 // stop reading a file after max_count matching lines
                 case 'm':  if (*(saved_args_0 + 1) != '\0') {
                                if (!isdigit(*(saved_args_0 + 1))) {
@@ -64,13 +69,16 @@ int grep(int argc, char **args)
 
     // argc and args have been changed through the while body
     if(argc != 1 && argc != 2) {
-        printf("Usage: grep -v -n -c -m NUM pattern [file]\n");
+        printf("Usage: grep -v -n -c -H -h -m NUM pattern [file]\n");
         return -1;
     }
-    else if (argc == 1)    // if no file specified, then use STDIN
+    else if (argc == 1) {    // if no file specified, then use STDIN
         fs = stdin;
+        filename = "(standard input)";
+    }
     else {    // argc == 2
-        fs = fopen(*(args + 1), "r");
+        filename = *(args + 1);
+        fs = fopen(filename, "r");
         if (!fs) {
             fprintf(stderr, "grep: %s: No such file or directory\n", *(args + 1));
             return -1;
@@ -88,6 +96,8 @@ int grep(int argc, char **args)
         if((strstr(buf, *args) != NULL) != except)
         {
             if (!count_only) {
+                if (print_filename)
+                    printf("%s:", filename);
                 if(number)
                     printf("%ld:", lineno);
                 printf("%s", buf);

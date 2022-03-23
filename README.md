@@ -34,7 +34,8 @@ This repository is inspired by [Yash: Yet another shell](https://www.samiam.org/
 This repository has been tested on Ubuntu and CentOS. It is currently not compatible with macOS.
 
     1. make (generate the target 'dksh')
-    2. make clean (delete the target 'dksh')
+    2. make debug (generate the target 'dksh', with debug info)
+    3. make clean (delete the target 'dksh')
 
 ### Manual:
 
@@ -123,3 +124,7 @@ This repository has been tested on Ubuntu and CentOS. It is currently not compat
     22. ./<user's program>:
         (1) ./<user's program>
 
+### Todo:
+    1. support '>' (IO redirection)
+    2. support '>>' (IO redirection, append-only)
+    3. support '|' (pipeline)

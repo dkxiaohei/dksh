@@ -8,13 +8,17 @@
 
 typedef int bool;
 
+static char * my_strstr(const char *, const char *, bool);
+
+char * strcasestr(const char *, const char *);
+
 int grep(int argc, char **args)
 {
     // calloc will initialize the memory to zero
     char *buf = calloc(BUFSIZE, sizeof(char));
     long lineno = 0;
     int c, found = 0, max_count = -1;
-    bool except = 0, number = 0, count_only = 0, print_filename = 0;
+    bool except = 0, number = 0, count_only = 0, print_filename = 0, ignore_case = 0;
     // used as the 2nd parameter of getline
     size_t tmp = BUFSIZE;
     FILE *fs;
@@ -40,6 +44,8 @@ int grep(int argc, char **args)
                 case 'H':  print_filename = 1;  break;
                 // never print filename headers (i.e., filenames) with output lines
                 case 'h':  print_filename = 0;  break;
+                // perform case insensitive matching
+                case 'i':  ignore_case = 1;  break;
                 // stop reading a file after max_count matching lines
                 case 'm':  if (*(saved_args_0 + 1) != '\0') {
                                if (!isdigit(*(saved_args_0 + 1))) {
@@ -69,14 +75,12 @@ int grep(int argc, char **args)
 
     // argc and args have been changed through the while body
     if(argc != 1 && argc != 2) {
-        printf("Usage: grep -v -n -c -H -h -m NUM pattern [file]\n");
+        printf("Usage: grep -v -n -c -H -h -i -m NUM pattern [file]\n");
         return -1;
-    }
-    else if (argc == 1) {    // if no file specified, then use STDIN
+    } else if (argc == 1) {    // if no file specified, then use STDIN
         fs = stdin;
         filename = "(standard input)";
-    }
-    else {    // argc == 2
+    } else {    // argc == 2
         filename = *(args + 1);
         fs = fopen(filename, "r");
         if (!fs) {
@@ -92,8 +96,9 @@ int grep(int argc, char **args)
 
         lineno++;
 
+        char *result = my_strstr(buf, *args, ignore_case);;
         // kind of tricky
-        if((strstr(buf, *args) != NULL) != except)
+        if((result != NULL) != except)
         {
             if (!count_only) {
                 if (print_filename)
@@ -121,4 +126,10 @@ int grep(int argc, char **args)
         }
 
     return found;
+}
+
+static char * my_strstr(const char *haystack, const char *needle, bool ignore_case) {
+    if (ignore_case)
+        return strcasestr(haystack, needle);
+    return strstr(haystack, needle);
 }

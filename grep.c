@@ -19,6 +19,7 @@ int grep(int argc, char **args)
     long lineno = 0;
     int c, found = 0, max_count = -1;
     bool except = 0, number = 0, count_only = 0, print_filename = 0, ignore_case = 0;
+    bool only_matching = 0;
     // used as the 2nd parameter of getline
     size_t tmp = BUFSIZE;
     FILE *fs;
@@ -46,6 +47,8 @@ int grep(int argc, char **args)
                 case 'h':  print_filename = 0;  break;
                 // perform case insensitive matching
                 case 'i':  ignore_case = 1;  break;
+                // prints only the matching part of the lines
+                case 'o':  only_matching = 1;  break;
                 // stop reading a file after max_count matching lines
                 case 'm':  if (*(saved_args_0 + 1) != '\0') {
                                if (!isdigit(*(saved_args_0 + 1))) {
@@ -75,7 +78,7 @@ int grep(int argc, char **args)
 
     // argc and args have been changed through the while body
     if(argc != 1 && argc != 2) {
-        printf("Usage: grep -v -n -c -H -h -i -m NUM pattern [file]\n");
+        printf("Usage: grep -v -n -c -H -h -i -o -m NUM pattern [file]\n");
         return -1;
     } else if (argc == 1) {    // if no file specified, then use STDIN
         fs = stdin;
@@ -105,7 +108,12 @@ int grep(int argc, char **args)
                     printf("%s:", filename);
                 if(number)
                     printf("%ld:", lineno);
-                printf("%s", buf);
+
+                if (only_matching) {
+                    printf("%s\n", *args);
+                } else {
+                    printf("%s", buf);
+                }
             }
             found++;
         }

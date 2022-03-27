@@ -21,7 +21,7 @@ This repository is inspired by [Yash: Yet another shell](https://www.samiam.org/
     15. who
     16. history
     17. more
-    18. grep (-v -n -c -H -h -i -o -q -m <num> | -vncHhioqm <num>)
+    18. grep (-v -n -c -H -h -i -o -q -b -m <num> | -vncHhioqbm <num>)
     19. mv
     20. tee (-a)
     21. time
@@ -111,8 +111,9 @@ This repository has been tested on Ubuntu and CentOS. It is currently not compat
         (7) grep -i <pattern> <file>: perform case insensitive matching
         (8) grep -o <pattern> <file>: prints only the matching part of the lines
         (9) grep -q <pattern> <file>: quiet mode: suppress normal output
-        (10) grep -m <NUM> <pattern> <file>: stop reading a file after NUM matching lines
-        (11) grep -vncm <NUM> <pattern> <file>
+        (10) grep -b <pattern> <file>: the offset in bytes of a matched pattern is displayed in front of the respective matched line
+        (11) grep -m <NUM> <pattern> <file>: stop reading a file after NUM matching lines
+        (12) grep -vncm <NUM> <pattern> <file>
 
     19. mv:
         (1) mv <oldpath> <newpath>

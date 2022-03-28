@@ -113,10 +113,16 @@ int grep(int argc, char **args)
             if (!quiet && !count_only) {
                 if (print_filename)
                     printf("%s:", filename);
+
                 if (number)
                     printf("%ld:", lineno);
-                if (byte_offset)
-                    printf("%ld:", str_size);
+
+                if (byte_offset) {
+                    if (only_matching)
+                        printf("%ld:", str_size + (result - buf));
+                    else
+                        printf("%ld:", str_size);
+                }
 
                 if (only_matching) {
                     printf("%s\n", *args);

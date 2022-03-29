@@ -21,7 +21,7 @@ int help(void)
             "kill (-signum)\n"
             "history\n"
             "who\n"
-            "grep (-v -n -c -H -h -i -o -q -b -m <num> | -vncHhioqbm <num>)\n"
+            "grep (-v -n -c -H -h -i -o -q -b -L -l -m <num> | -vncHhioqbLlm <num>)\n"
             "mv\n"
             "tee (-a)\n"
             "./<user's program>\n\n");

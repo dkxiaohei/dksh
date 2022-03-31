@@ -59,10 +59,10 @@ int grep(int argc, char **args)
                 case 'b':  byte_offset = 1;  break;
                 // only the names of files not containing selected lines are written to
                 // standard output
-                case 'L':  files_without_match = !files_with_matches;  break;
+                case 'L':  files_without_match = 1;  files_with_matches = 0;  break;
                 // only the names of files containing selected lines are written to
                 // standard output
-                case 'l':  files_with_matches = !files_without_match;  break;
+                case 'l':  files_with_matches = 1;  files_without_match = 0;  break;
                 // stop reading a file after max_count matching lines
                 case 'm':  if (*(saved_args_0 + 1) != '\0') {
                                if (!isdigit(*(saved_args_0 + 1))) {
@@ -118,7 +118,7 @@ int grep(int argc, char **args)
         if((result != NULL) != except)
         {
             found++;
-            if (!quiet && !count_only) {
+            if (!quiet && !count_only && !files_without_match && !files_with_matches) {
                 if (print_filename)
                     printf("%s:", filename);
 
@@ -138,6 +138,11 @@ int grep(int argc, char **args)
                     printf("%s", buf);
                 }
             }
+
+            if (files_with_matches) {
+                printf("%s\n", filename);
+                break;
+            }
         }
 
         str_size += strlen(buf);
@@ -146,8 +151,12 @@ int grep(int argc, char **args)
         memset(buf, 0, BUFSIZE);
     }
 
-    if (!quiet && count_only)
+    if (!quiet && count_only && !files_without_match && !files_with_matches)
         printf("%d\n", found);
+
+    if (found == 0 && files_without_match) {
+        printf("%s\n", filename);
+    }
 
     if (buf)
         free(buf);

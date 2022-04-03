@@ -26,7 +26,7 @@ int grep(int argc, char **args)
     // used as the 2nd parameter of getline
     size_t tmp = BUFSIZE;
     FILE *fs;
-    char *filename;
+    char *filename, *label = NULL;
 
     // parse the options
     while(--argc > 0 && (*++args)[0] == '-') {
@@ -83,6 +83,16 @@ int grep(int argc, char **args)
                                --argc;
                            }
                            break;
+                case '-':  if (strcmp(saved_args_0 + 1, "label") == 0) {
+                               label = *++args;
+                               // step over the remaining of the option '--label'
+                               while (*(++saved_args_0 + 1) != '\0')
+                                   ;
+                               // step over the LABEL after '--label'
+                               --argc;
+                               break;
+                           }
+                           // fall through to default
                 default:  printf("grep: illegal option %c\n", c);
                           argc = 0;
                           found = -1;
@@ -96,7 +106,7 @@ int grep(int argc, char **args)
         return 2;
     } else if (argc == 1) {    // if no file specified, then use STDIN
         fs = stdin;
-        filename = "(standard input)";
+        filename = (label == NULL) ? "(standard input)" : label;
     } else {    // argc == 2
         filename = *(args + 1);
         fs = fopen(filename, "r");

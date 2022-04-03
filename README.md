@@ -21,7 +21,7 @@ This repository is inspired by [Yash: Yet another shell](https://www.samiam.org/
     15. who
     16. history
     17. more
-    18. grep (-v -n -c -H -h -i -o -q -b -L -l -m <num> | -vncHhioqbLlm <num>)
+    18. grep (-v -n -c -H -h -i -o -q -b -L -l -m <num> --label <LABEL> | -vncHhioqbLlm <num> --label <LABEL>)
     19. mv
     20. tee (-a)
     21. time
@@ -31,7 +31,7 @@ This repository is inspired by [Yash: Yet another shell](https://www.samiam.org/
 
 ### Compile:
 
-This repository has been tested on Ubuntu and CentOS. It is currently not compatible with macOS.
+This repository has been tested on **Ubuntu** and **CentOS**. It is currently not compatible with macOS.
 
     1. make (generate the target 'dksh')
     2. make debug (generate the target 'dksh', with debug info)
@@ -115,7 +115,8 @@ This repository has been tested on Ubuntu and CentOS. It is currently not compat
         (11) grep -L <pattern> <file>: only the names of files not containing selected lines are written to standard output
         (12) grep -l <pattern> <file>: only the names of files containing selected lines are written to standard output
         (13) grep -m <NUM> <pattern> <file>: stop reading a file after NUM matching lines
-        (14) grep -vncm <NUM> <pattern> <file>
+        (14) grep --label <LABEL> <pattern> <file>: display input actually coming from standard input as input coming from file LABEL
+        (15) grep -vncm <NUM> <pattern> <file>
 
     19. mv:
         (1) mv <oldpath> <newpath>

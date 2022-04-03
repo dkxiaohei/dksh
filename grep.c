@@ -102,7 +102,7 @@ int grep(int argc, char **args)
 
     // argc and args have been changed through the while body
     if(argc != 1 && argc != 2) {
-        printf("Usage: grep -v -n -c -H -h -i -o -q -b -L -l -m <num> pattern [file]\n");
+        printf("Usage: grep -v -n -c -H -h -i -o -q -b -L -l -m <num> --label <LABEL> pattern [file]\n");
         return 2;
     } else if (argc == 1) {    // if no file specified, then use STDIN
         fs = stdin;

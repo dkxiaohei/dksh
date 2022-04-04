@@ -25,12 +25,12 @@ static char *hist[HISTMAX] = {NULL};
 static int get_args(char *);    // parse the input to get args
 static void free_args(char **);    // free the memory of args
 static void free_hist(char **);    // free the memory of hist
-static void clean_up();    // free the memory
+static void clean_up();    // free the memory of args and hist
 static void built_in(int, char **);    // dksh built-in commands
-static void ignore_signal(void);    // ignore some signals
+static void ignore_signal();    // ignore some signals
 
 /* prototypes for extern functions */
-int pwd(void);
+int pwd();
 int cd(char **);
 int echo(int, char **, int);
 int cat(int, char **);
@@ -38,19 +38,19 @@ int ls(int, char **);
 int my_mkdir(int, char **);
 int my_rmdir(int, char **);
 int rm(int, char **);
-int date(void);
+int date();
 int my_chmod(int, char **);
 int wc(int, char **);
 int my_kill(int, char **);
 int history(char **);
 int who(int, char **);
-int help(void);    // list the commands that dksh supports
+int help();    // list the commands that dksh supports
 int grep(int, char **);
 int mv(int, char **);
 int tee(int, char **);
 int my_time(int, char **);
 int more(int, char **);
-void my_exit(void);
+void my_exit();
 
 /* main */
 int main(void)
@@ -98,9 +98,7 @@ int main(void)
             clean_up();
             putchar(10);
             my_exit();
-        }
-        // if the first char is not EOF, then put it back into the STDIN stream
-        else
+        } else    // if the first char is not EOF, then put it back into the STDIN stream
             ungetc(ch, stdin);
 
         /* get input, add to history and parse args */
@@ -147,10 +145,8 @@ int main(void)
                 perror("fork");
                 clean_up();
                 exit(EXIT_FAILURE);
-            }
-            else if (pid == 0) {    // child process
+            } else if (pid == 0) {    // child process
                 close(pipefd[0]);    // close unused read end of pipe
-
                 if (args[0][0] == '-') {    // call Bash commands
                     // &args[0][1]: excluding the preceding '-'
                     if (execvp(&args[0][1], args) == -1) {
@@ -160,41 +156,31 @@ int main(void)
                                 &args[0][1]);
                         // exit() is unreliable here, so _exit must be used
                         _exit(EXIT_FAILURE);
-                    }
-                    else {
+                    } else {
                         write(pipefd[1], "0", 1);
                         close(pipefd[1]);
                     }
-                }
-                // user's program ("./<program name>")
-                else if (args[0][0] == '.') {
+                } else if (args[0][0] == '.') {    // user's program ("./<program name>")
                     if (execvp(args[0], args) == -1) {
                         write(pipefd[1], "1", 1);
                         close(pipefd[1]);    // reader will see EOF
-                        fprintf(stderr, "bash: %s: command not found\n",
-                                args[0]);
+                        fprintf(stderr, "bash: %s: command not found\n", args[0]);
                         // exit() is unreliable here, so _exit must be used
                         _exit(EXIT_FAILURE);
-                    }
-                    else {
+                    } else {
                         write(pipefd[1], "0", 1);
                         close(pipefd[1]);
                     }
                 }
-
                 _exit(EXIT_SUCCESS);
-            }
-            else {    // pid > 0: parent process
+            } else {    // pid > 0: parent process
                 close(pipefd[1]);    // close unused write end of pipe
                 read(pipefd[0], &pipech, 1);
                 close(pipefd[0]);
-
                 return_value = (pipech == '1') ? -1 : 0;
-
                 wait(0);    // wait for child
             }
         }
-
         free_args(args);
     }    // end while (1), the main loop
 
@@ -203,10 +189,10 @@ int main(void)
 
 static int get_args(char *input)
 {
-    int i = 0, j;
-
     if (!input)
         return 0;
+
+    int i = 0, j;
 
     while (1) {
         while (*input == ' ')    // omit the preceding blank(s)
@@ -227,8 +213,7 @@ static int get_args(char *input)
             args[i][j++] = *input++;
         args[i][j] = '\0';    // terminate each argument with '\0'
 
-        i++;
-        if (i > ARGMAX - 1) {    // too many args
+        if (++i > ARGMAX - 1) {    // too many args
             free_args(args);
             return 0;
         }
@@ -268,8 +253,7 @@ static void built_in(int argc, char **args)
     else if (strcmp(args[0], "exit") == 0) {
         clean_up();
         my_exit();
-    }
-    else if (strcmp(args[0], "pwd") == 0)
+    } else if (strcmp(args[0], "pwd") == 0)
         return_value = pwd();
     else if (strcmp(args[0], "cd") == 0)
         return_value = cd(args);
@@ -309,8 +293,7 @@ static void built_in(int argc, char **args)
         return_value = more(argc, args);
     else {
         // if the command isn't built-in, then try execvp next time
-        printf("dksh: %s: command not found...(try '-%s')\n",
-                args[0], args[0]);
+        printf("dksh: %s: command not found...(try '-%s')\n", args[0], args[0]);
         return_value = -1;
     }
 }

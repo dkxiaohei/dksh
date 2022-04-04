@@ -116,7 +116,7 @@ This repository has been tested on **Ubuntu** and **CentOS**. It is currently no
         (12) grep -l <pattern> <file>: only the names of files containing selected lines are written to standard output
         (13) grep -m <NUM> <pattern> <file>: stop reading a file after NUM matching lines
         (14) grep --label <LABEL> <pattern> <file>: display input actually coming from standard input as input coming from file LABEL
-        (15) grep -vncm <NUM> <pattern> <file>
+        (15) grep -vncHhioqbLlm <num> --label <LABEL> <pattern> <file>
 
     19. mv:
         (1) mv <oldpath> <newpath>
@@ -135,4 +135,5 @@ This repository has been tested on **Ubuntu** and **CentOS**. It is currently no
     1. support '>' (IO redirection, output)
     2. support '>>' (IO redirection, output, append-only)
     2. support '<' (IO redirection, input)
-    4. support '|' (pipeline)
+    4. support '&' (background)
+    5. support '|' (pipeline)

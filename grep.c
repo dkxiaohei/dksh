@@ -1,4 +1,5 @@
 /* Inspired by K&R C - "The C Progamming Language" */
+
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -8,6 +9,7 @@
 
 typedef int bool;
 
+static void clean_up(char *);
 static char * my_strstr(const char *, const char *, bool);
 
 char * strcasestr(const char *, const char *);
@@ -30,8 +32,7 @@ int grep(int argc, char **args)
 
     // parse the options
     while(--argc > 0 && (*++args)[0] == '-') {
-        // prevent the value of args[0] (which is a pointer)
-        // from being changed
+        // prevent the value of args[0] (which is a pointer) from being changed
         char *saved_args_0 = args[0];
 
         while((c = *++saved_args_0))
@@ -67,6 +68,7 @@ int grep(int argc, char **args)
                 case 'm':  if (*(saved_args_0 + 1) != '\0') {
                                if (!isdigit(*(saved_args_0 + 1))) {
                                    printf("grep: invalid max count\n");
+                                   clean_up(buf);
                                    return 2;
                                }
                                max_count = atoi(saved_args_0 + 1);
@@ -76,6 +78,7 @@ int grep(int argc, char **args)
                            } else {
                                if (!isdigit(args[1][0])) {
                                    printf("grep: invalid max count\n");
+                                   clean_up(buf);
                                    return 2;
                                }
                                max_count = atoi(*++args);
@@ -83,6 +86,7 @@ int grep(int argc, char **args)
                                --argc;
                            }
                            break;
+                // options starting with '--'
                 case '-':  if (strcmp(saved_args_0 + 1, "label") == 0) {
                                label = *++args;
                                // step over the remaining of the option '--label'
@@ -101,10 +105,12 @@ int grep(int argc, char **args)
     }
 
     // argc and args have been changed through the while body
-    if(argc != 1 && argc != 2) {
+    if(argc < 1) {
         printf("Usage: grep -v -n -c -H -h -i -o -q -b -L -l -m <num> --label <LABEL> pattern [file]\n");
+        clean_up(buf);
         return 2;
-    } else if (argc == 1) {    // if no file specified, then use STDIN
+    }
+    if (argc == 1) {    // if no file specified, then use STDIN
         fs = stdin;
         filename = (label == NULL) ? "(standard input)" : label;
     } else {    // argc == 2
@@ -112,6 +118,7 @@ int grep(int argc, char **args)
         fs = fopen(filename, "r");
         if (!fs) {
             fprintf(stderr, "grep: %s: No such file or directory\n", *(args + 1));
+            clean_up(buf);
             return 2;
         }
     }
@@ -168,8 +175,7 @@ int grep(int argc, char **args)
         printf("%s\n", filename);
     }
 
-    if (buf)
-        free(buf);
+    clean_up(buf);
 
     if (fs != stdin)
         if (fclose(fs) == EOF) {
@@ -178,6 +184,11 @@ int grep(int argc, char **args)
         }
 
     return found > 0 ? 0 : 1;
+}
+
+static void clean_up(char *buf) {
+    if (buf)
+        free(buf);
 }
 
 static char * my_strstr(const char *haystack, const char *needle, bool ignore_case) {

@@ -137,3 +137,4 @@ This repository has been tested on **Ubuntu** and **CentOS**. It is currently no
     2. support '<' (IO redirection, input)
     4. support '&' (background)
     5. support '|' (pipeline)
+    6. support 'cdecl' (Compose C and C++ type declarations)

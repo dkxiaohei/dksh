@@ -25,7 +25,8 @@ This repository is inspired by [Yash: Yet another shell](https://www.samiam.org/
     19. mv
     20. tee (-a)
     21. time
-    22. ./<user's program>
+    22. cdecl
+    23. ./<user's program>
 
     (PS. Putting a '-' before a command will call the Bash built-in commands.)
 
@@ -128,7 +129,10 @@ This repository has been tested on **Ubuntu** and **CentOS**. It is currently no
     21. time:
         (1) time <command>: run programs and summarize system resource usage
 
-    22. ./<user's program>:
+    22. cdecl:
+        (1) cdecl: compose C and C++ type declarations
+
+    23. ./<user's program>:
         (1) ./<user's program>
 
 ### Todo:

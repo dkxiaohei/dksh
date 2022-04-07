@@ -2,7 +2,7 @@
 
 int help(void)
 {
-    printf("\n--- dksh commands (21 + 1) ---\n"
+    printf("\n--- dksh commands (22 + 1) ---\n"
             "help\n"
             "exit (Ctrl-D)\n"
             "pwd\n"
@@ -24,6 +24,7 @@ int help(void)
             "grep (-v -n -c -H -h -i -o -q -b -L -l -m <num> --label <LABEL> | -vncHhioqbLlm <num> --label <LABEL>)\n"
             "mv\n"
             "tee (-a)\n"
+            "cdecl\n"
             "./<user's program>\n\n");
 
     return 0;

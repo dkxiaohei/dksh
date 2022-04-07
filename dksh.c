@@ -50,6 +50,7 @@ int mv(int, char **);
 int tee(int, char **);
 int my_time(int, char **);
 int more(int, char **);
+int cdecl(int, char **);
 void my_exit();
 
 /* main */
@@ -88,8 +89,7 @@ int main(void)
         /* print the prompt */
         char *pwd = getcwd(NULL, 0);
         char *tmp_pwd = strdup(pwd);
-        printf("[%s@%s:%s] %s",
-                getenv("USER"), hostname, basename(tmp_pwd), prompt);
+        printf("[%s@%s:%s] %s", getenv("USER"), hostname, basename(tmp_pwd), prompt);
         free(pwd);
 
         /* Ctrl-D to exit */
@@ -152,8 +152,7 @@ int main(void)
                     if (execvp(&args[0][1], args) == -1) {
                         write(pipefd[1], "1", 1);
                         close(pipefd[1]);    // reader will see EOF
-                        fprintf(stderr, "bash: %s: command not found\n",
-                                &args[0][1]);
+                        fprintf(stderr, "bash: %s: command not found\n", &args[0][1]);
                         // exit() is unreliable here, so _exit must be used
                         _exit(EXIT_FAILURE);
                     } else {
@@ -291,6 +290,8 @@ static void built_in(int argc, char **args)
         return_value = my_time(argc, args);
     else if (strcmp(args[0], "more") == 0)
         return_value = more(argc, args);
+    else if (strcmp(args[0], "cdecl") == 0)
+        return_value = cdecl(argc, args);
     else {
         // if the command isn't built-in, then try execvp next time
         printf("dksh: %s: command not found...(try '-%s')\n", args[0], args[0]);

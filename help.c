@@ -24,7 +24,8 @@ int help(void)
             "grep (-v -n -c -H -h -i -o -q -b -L -l -m <num> --label <LABEL> | -vncHhioqbLlm <num> --label <LABEL>)\n"
             "mv\n"
             "tee (-a)\n"
-            "cdecl\n"
+            "dcl\n"
+            "undcl\n"
             "./<user's program>\n\n");
 
     return 0;

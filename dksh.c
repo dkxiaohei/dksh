@@ -50,7 +50,8 @@ int mv(int, char **);
 int tee(int, char **);
 int my_time(int, char **);
 int more(int, char **);
-int cdecl(int, char **);
+int dcl(int, char **);
+int undcl(int, char **);
 void my_exit();
 
 /* main */
@@ -290,8 +291,10 @@ static void built_in(int argc, char **args)
         return_value = my_time(argc, args);
     else if (strcmp(args[0], "more") == 0)
         return_value = more(argc, args);
-    else if (strcmp(args[0], "cdecl") == 0)
-        return_value = cdecl(argc, args);
+    else if (strcmp(args[0], "dcl") == 0)
+        return_value = dcl(argc, args);
+    else if (strcmp(args[0], "undcl") == 0)
+        return_value = undcl(argc, args);
     else {
         // if the command isn't built-in, then try execvp next time
         printf("dksh: %s: command not found...(try '-%s')\n", args[0], args[0]);

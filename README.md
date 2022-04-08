@@ -25,8 +25,9 @@ This repository is inspired by [Yash: Yet another shell](https://www.samiam.org/
     19. mv
     20. tee (-a)
     21. time
-    22. cdecl
-    23. ./<user's program>
+    22. dcl
+    23. undcl
+    24. ./<user's program>
 
     (PS. Putting a '-' before a command will call the Bash built-in commands.)
 
@@ -129,10 +130,13 @@ This repository has been tested on **Ubuntu** and **CentOS**. It is currently no
     21. time:
         (1) time <command>: run programs and summarize system resource usage
 
-    22. cdecl:
-        (1) cdecl: compose C and C++ type declarations
+    22. dcl:
+        (1) dcl: convert declaration to words
 
-    23. ./<user's program>:
+    23. undcl:
+        (1) undcl: convert word description to declaration
+
+    24. ./<user's program>:
         (1) ./<user's program>
 
 ### Todo:
@@ -141,4 +145,3 @@ This repository has been tested on **Ubuntu** and **CentOS**. It is currently no
     2. support '<' (IO redirection, input)
     4. support '&' (background)
     5. support '|' (pipeline)
-    6. support 'cdecl' (Compose C and C++ type declarations)

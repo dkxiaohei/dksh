@@ -5,9 +5,9 @@
 #define MAXTOKEN 100
 #define MAXOUT 1000
 
-int cdecl(int argc, char **args)
+int undcl(int argc, char **args)
 {
-    printf("todo ...\n");
+    printf("undcl: todo ...\n");
 
     return 0;
 }

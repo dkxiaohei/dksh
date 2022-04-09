@@ -50,7 +50,7 @@ int mv(int, char **);
 int tee(int, char **);
 int my_time(int, char **);
 int more(int, char **);
-int dcl(int, char **);
+int my_dcl(int, char **);
 int undcl(int, char **);
 void my_exit();
 
@@ -94,10 +94,10 @@ int main(void)
         free(pwd);
 
         /* Ctrl-D to exit */
-        int ch = fgetc(stdin);
+        int ch = getchar();
         if (ch == EOF) {
             clean_up();
-            putchar(10);
+            printf("\nexit dksh by Ctrl-D\n");
             my_exit();
         } else    // if the first char is not EOF, then put it back into the STDIN stream
             ungetc(ch, stdin);
@@ -224,6 +224,9 @@ static int get_args(char *input)
 
 static void free_args(char **args)
 {
+    if (!args)
+        return;
+
     int i;
     for (i = 0; i < ARGMAX; i++)
         if (args[i]) {
@@ -234,6 +237,9 @@ static void free_args(char **args)
 
 static void free_hist(char **hist)
 {
+    if (!hist)
+        return;
+
     int i;
     for (i = 0; hist[i] != NULL; i++) {
         free(hist[i]);
@@ -292,7 +298,7 @@ static void built_in(int argc, char **args)
     else if (strcmp(args[0], "more") == 0)
         return_value = more(argc, args);
     else if (strcmp(args[0], "dcl") == 0)
-        return_value = dcl(argc, args);
+        return_value = my_dcl(argc, args);
     else if (strcmp(args[0], "undcl") == 0)
         return_value = undcl(argc, args);
     else {

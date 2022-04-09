@@ -19,32 +19,33 @@
 
 enum { NAME, PARAMS, BRACKETS };
 
-int gettoken();
-void dcl();
-void dirdcl();
+static int gettoken();
+static void dcl();
+static void dirdcl();
 
-int tokentype;  // type of last token
-char token[MAXTOKEN];  // last token string
-char name[MAXTOKEN];  // identifier name
-char datatype[MAXTOKEN];  // data type = char , int , etc.
-char out[MAXOUT];  // output string
+static int tokentype;  // type of last token
+static char token[MAXTOKEN];  // last token string
+static char name[MAXTOKEN];  // identifier name
+static char datatype[MAXTOKEN];  // data type = char , int , etc.
+static char out[MAXOUT];  // output string
 
 /* convert declaration to words */
 int my_dcl(int argc, char **args)
 {
     printf(DCL_PROMT);
     while (gettoken() != EOF) {  // 1st token on line
-        printf(DCL_PROMT);
         strcpy(datatype, token);  // is the datatype
-        if (tokentype == '\n')
+        if (tokentype == '\n') {
+            printf(DCL_PROMT);
             continue;
+        }
         out[0] = '\0';
 
         dcl();  // parse rest of line
 
         if (tokentype != '\n') {
             fprintf(stderr, "syntax error\n");
-            return 0;
+            continue;
         }
 
         if (name[0] != '\0')
@@ -54,6 +55,50 @@ int my_dcl(int argc, char **args)
         name[0] = '\0';
         datatype[0] = '\0';
         out[0] = '\0';
+
+        printf(DCL_PROMT);
+    }
+
+    return 0;
+}
+
+/* convert word description to declaration */
+int undcl(int argc, char **args)
+{
+    int type;
+    char temp[MAXTOKEN + MAXOUT];
+
+    printf(UNDCL_PROMT);
+    while (gettoken() != EOF) {
+        if (tokentype == '\n') {
+            printf(UNDCL_PROMT);
+            continue;
+        }
+
+        out[0] = '\0';
+        strcpy(out, token);
+
+        while ((type = gettoken()) != '\n')
+            if (type == PARAMS || type == BRACKETS)
+                strcat(out, token);
+            else if (type == '*') {
+                sprintf(temp, "(*%s)", out);
+                strcpy(out, temp);
+            } else if (type == NAME) {
+                sprintf(temp, "%s %s", token, out);
+                strcpy(out, temp);
+            } else
+                fprintf(stderr, "invalid input at %s\n", token);
+
+        if (out[0] != '\0')
+            printf("%s\n", out);
+
+        token[0] = '\0';
+        name[0] = '\0';
+        datatype[0] = '\0';
+        out[0] = '\0';
+
+        printf(UNDCL_PROMT);
     }
 
     return 0;
@@ -128,11 +173,4 @@ void dirdcl()
             strcat(out, token);
             strcat(out, " of");
         }
-}
-
-int undcl(int argc, char **args)
-{
-    printf(UNDCL_PROMT);
-
-    return 0;
 }

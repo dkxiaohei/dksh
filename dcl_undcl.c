@@ -20,8 +20,9 @@
 enum { NAME, PARAMS, BRACKETS };
 
 static int gettoken();
-static void dcl();
-static void dirdcl();
+static int dcl();
+static int dirdcl();
+static void clear();
 
 static int tokentype;  // type of last token
 static char token[MAXTOKEN];  // last token string
@@ -32,6 +33,7 @@ static char out[MAXOUT];  // output string
 /* convert declaration to words */
 int my_dcl(int argc, char **args)
 {
+    int result;
     printf(DCL_PROMT);
     while (gettoken() != EOF) {  // 1st token on line
         strcpy(datatype, token);  // is the datatype
@@ -41,7 +43,11 @@ int my_dcl(int argc, char **args)
         }
         out[0] = '\0';
 
-        dcl();  // parse rest of line
+        result = dcl();  // parse rest of line
+        if (result != 0) {
+            printf(DCL_PROMT);
+            continue;
+        }
 
         if (tokentype != '\n') {
             fprintf(stderr, "syntax error\n");
@@ -51,11 +57,7 @@ int my_dcl(int argc, char **args)
         if (name[0] != '\0')
             printf("%s: %s %s\n", name, out, datatype);
 
-        token[0] = '\0';
-        name[0] = '\0';
-        datatype[0] = '\0';
-        out[0] = '\0';
-
+        clear();
         printf(DCL_PROMT);
     }
 
@@ -93,19 +95,23 @@ int undcl(int argc, char **args)
         if (out[0] != '\0')
             printf("%s\n", out);
 
-        token[0] = '\0';
-        name[0] = '\0';
-        datatype[0] = '\0';
-        out[0] = '\0';
-
+        clear();
         printf(UNDCL_PROMT);
     }
 
     return 0;
 }
 
+static void clear()
+{
+    token[0] = '\0';
+    name[0] = '\0';
+    datatype[0] = '\0';
+    out[0] = '\0';
+}
+
 /* return next token */
-int gettoken()
+static int gettoken()
 {
     int c;
     char *cursor = token;
@@ -138,31 +144,40 @@ int gettoken()
 }
 
 /* dcl: parse a declarator */
-void dcl()
+static int dcl()
 {
     int ns;
     for (ns = 0; gettoken() == '*';)  // count of *'s
         ns++;
 
-    dirdcl();
+    int result = dirdcl();
+    if (result != 0)
+        return result;
 
     while (ns-- > 0)
         strcat(out, " pointer to");
+
+    return 0;
 }
 
 /* dirdcl: parse a direct declarator */
-void dirdcl()
+static int dirdcl()
 {
-    int type;
+    int type, result;
 
     if (tokentype == '(') {  // (dcl)
-        dcl();
-        if (tokentype != ')')
+        result = dcl();
+        if (result != 0)
+            return result;
+        if (tokentype != ')') {
             fprintf(stderr, "error: missing ')'\n");
+            return 1;
+        }
     } else if (tokentype == NAME)  // variable name
         strcpy(name, token);
     else {
         fprintf(stderr, "error: expected name or (dcl)\n");
+        return 1;
     }
 
     while ((type = gettoken()) == PARAMS || type == BRACKETS)
@@ -173,4 +188,6 @@ void dirdcl()
             strcat(out, token);
             strcat(out, " of");
         }
+
+    return 0;
 }

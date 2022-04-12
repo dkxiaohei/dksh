@@ -2,6 +2,14 @@
 
 This repository is inspired by [Yash: Yet another shell](https://www.samiam.org/software/yash.html)
 
+'dksh' is a rudimentary shell which supports common Linux commands such as 'grep', 'ls', 'cat', 'wc' and so on.
+
+Till now, it has 23 built-in commands (and the number is still going up).
+
+The goal of this project is to show the basics of Linux system programming.
+
+Hopefully, 'dksh' will grow into a possible substitution for Bash.
+
 ### dksh commands:
 
     1. ls (-a -d -i -l | -adil)
@@ -33,7 +41,7 @@ This repository is inspired by [Yash: Yet another shell](https://www.samiam.org/
 
 ### Compile:
 
-This repository has been tested on **Ubuntu** and **CentOS**. It is currently not compatible with macOS.
+This repository has been tested on **Ubuntu**, **CentOS** and **macOS**.
 
     1. make (generate the target 'dksh')
     2. make debug (generate the target 'dksh', with debug info)

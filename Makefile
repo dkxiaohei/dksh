@@ -14,3 +14,4 @@ debug:
 
 clean:
 	rm -f $(target)
+	rm -rf dksh.dSYM/

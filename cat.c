@@ -1,19 +1,26 @@
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
 
 #define FALSE 0
 #define TRUE 1
 #define BUFSIZE 512
 
+int simple_output(char buf[], int size)
+{
+    // write to STDOUT
+    if (write(1, buf, size) < 0) {
+        perror("write");
+        return -1;
+    }
+    return 0;
+}
+
 int cat(int argc, char **args)
 {
     char buf[BUFSIZE];
     int fd, ret;
+    FILE *fp;
     int print_line_number = FALSE, line_number;
     int return_error = FALSE;
 
@@ -21,38 +28,35 @@ int cat(int argc, char **args)
     if (argc == 1) {
         fd = 0;
         while ((ret = read(fd, buf, sizeof(buf))) > 0)
-            if (write(1, buf, ret) < 0) {
-                perror("write");
+            if (simple_output(buf, ret) != 0)
                 return -1;
-            }
     } else {
         while (argc-- > 1) {    // support multiple files
-            if (strcmp(*++args, "-n")) {
+            if (strcmp(*++args, "-n") == 0) {
                 print_line_number = TRUE;
                 continue;
             } else
                 --args;
             line_number = 0;
 
-            fd = open(*++args, O_RDONLY);
-            if (fd == -1) {
+            fp = fopen(*++args, "r");
+            if (fp == NULL) {
                 fprintf(stderr, "cat: %s: No such file or directory\n", *args);
                 return_error = TRUE;
                 continue;    // try the next file (if any)
             }
 
-            while ((ret = read(fd, buf, sizeof(buf))) > 0)
+            while ((fgets(buf, sizeof(buf), fp)) != NULL) {
                 if (print_line_number)
-                    printf("%d: ", ++line_number);
-
-                // write to STDOUT
-                if (write(1, buf, ret) < 0) {
-                    perror("write");
+                    printf("%6d\t", ++line_number);
+                if ((fputs(buf, stdout)) == EOF) {
+                    perror("fputs");
                     return -1;
                 }
+            }
 
-            if (close(fd) == -1) {
-                perror("close");
+            if (fclose(fp) == EOF) {
+                perror("fclose");
                 return -1;
             }
         }

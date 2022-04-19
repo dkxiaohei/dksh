@@ -8,7 +8,7 @@ int help(void)
             "pwd\n"
             "cd (-)\n"
             "echo ($?)\n"
-            "cat\n"
+            "cat (-n -b | -nb)\n"
             "more\n"
             "ls (-a -d -i -l | -adil)\n"
             "mkdir\n"

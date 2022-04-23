@@ -19,6 +19,9 @@ int cat(int argc, char **args)
     int opt;
     int return_error = FALSE;
 
+    opterr = 0;
+    optind = 1;
+
     while ((opt = getopt(argc, args, "nb")) != -1)
         switch (opt) {
             case 'n':
@@ -34,17 +37,19 @@ int cat(int argc, char **args)
     argc -= optind;
     args += optind;
 
-    if (argc == 0)
-        do_cat(stdin);
-    else
-        while (argc-- > 0) {
-            if ((fp = fopen(*args++, "r")) == NULL) {
-                fprintf(stderr, "cat: %s: No such file or directory\n", *args);
-                return_error = TRUE;
-                continue;    // try the next file (if any)
-            }
-            do_cat(fp);
+    if (argc == 0) {
+        return_error = do_cat(stdin);
+        return return_error ? -1 : 0;
+    }
+
+    while (argc-- > 0) {
+        if ((fp = fopen(*args++, "r")) == NULL) {
+            fprintf(stderr, "cat: %s: No such file or directory\n", *args);
+            return_error = TRUE;
+            continue;    // try the next file (if any)
         }
+        return_error = do_cat(fp);
+    }
 
     return return_error ? -1 : 0;
 }
@@ -63,6 +68,7 @@ static int do_cat(FILE *fp)
             perror("fputs");
             return -1;
         }
+        memset(buf, 0, sizeof(buf));
     }
 
     if (fclose(fp) == EOF) {

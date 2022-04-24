@@ -21,18 +21,18 @@ int my_time(int argc, char **args)
             perror("fork");
             exit(EXIT_FAILURE);
         }
-        else if (pid == 0) {  // child process
+        else if (pid == 0) {  /* child process */
             if (execvp(args[1], &args[1]) == -1) {
                 fprintf(stderr, "%s: %s command not found\n",
                         args[0], args[1]);
 
-                _exit(EXIT_FAILURE);  // exit() is unreliable here
+                _exit(EXIT_FAILURE);  /* exit() is unreliable here */
             }
 
-            _exit(EXIT_SUCCESS);  // exit() is unreliable here
+            _exit(EXIT_SUCCESS);  /* exit() is unreliable here */
         }
-        else  // pid > 0, parent process
-            wait(&status);  // wait for child process to finish
+        else  /* pid > 0, parent process */
+            wait(&status);  /* wait for child process to finish */
     }
 
     after = times(&t_buf);

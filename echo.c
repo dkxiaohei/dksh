@@ -3,7 +3,7 @@
 
 int echo(int argc, char **args, int return_value)
 {
-    // if called with "$?", print return value of last command
+    /* if called with "$?", print return value of last command */
     if (strcmp(args[1], "$?") == 0)
         printf("%d\n", return_value);
     else {

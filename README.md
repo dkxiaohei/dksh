@@ -14,7 +14,7 @@ Hopefully, 'dksh' will grow into a possible substitution for Bash.
 
     1. ls (-a -d -i -l | -adil)
     2. echo ($?)
-    3. cat (-n -b | -nb)
+    3. cat (-n -b -s | -nbs)
     4. mkdir
     5. rmdir
     6. rm
@@ -41,7 +41,7 @@ Hopefully, 'dksh' will grow into a possible substitution for Bash.
 
 ### Compile:
 
-This repository has been tested on **Ubuntu**, **CentOS** and **macOS**.
+This repository, which is compatible with ANSI C, has been tested on **Ubuntu**, **CentOS** and **macOS**.
 
     1. make (generate the target 'dksh')
     2. make debug (generate the target 'dksh', with debug info)
@@ -64,6 +64,7 @@ This repository has been tested on **Ubuntu**, **CentOS** and **macOS**.
         (1) cat <file(s)>
         (2) cat -n <file(s)>: number the output lines, starting at 1
         (3) cat -b <file(s)>: number the non-blank output lines, starting at 1
+        (4) cat -s <file(s)>: squeeze multiple adjacent empty lines
 
     4. mkdir:
         (1) mkdir <directory>

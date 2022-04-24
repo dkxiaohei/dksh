@@ -15,7 +15,7 @@ int who(int argc, char **args)
 #endif  /* __APPLE__ */
     time_t t;
 
-    // use alternate file if supplied, instead of /var/run/utmp
+    /* use alternate file if supplied, instead of /var/run/utmp */
     if (argc > 1)
 #ifdef __APPLE__
         if (utmpxname(args[1]) == -1) {
@@ -34,15 +34,15 @@ int who(int argc, char **args)
     printf("USER       PID LINE   HOST            TIME\n");
 
 #ifdef __APPLE__
-    while ((ut = getutxent()) != NULL)    // sequential scan to EOF
+    while ((ut = getutxent()) != NULL)    /* sequential scan to EOF */
 #else
-    while ((ut = getutent()) != NULL)    // sequential scan to EOF
+    while ((ut = getutent()) != NULL)    /* sequential scan to EOF */
 #endif  /* __APPLE__ */
-        if (ut->ut_type == 7) {    // only display USER_PROCESS (7)
+        if (ut->ut_type == 7) {    /* only display USER_PROCESS (7) */
             printf("%-8s ", ut->ut_user);
             printf("%5ld %-6.6s %-15.15s ", (long) ut->ut_pid,
                     ut->ut_line, ut->ut_host);
-            // printf("%s", ctime((time_t *) &(ut->ut_tv.tv_sec)));
+            /* printf("%s", ctime((time_t *) &(ut->ut_tv.tv_sec))); */
             t = ut->ut_tv.tv_sec;
             printf("%s", ctime(&t));
         }

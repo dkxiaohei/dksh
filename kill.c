@@ -14,8 +14,8 @@ int my_kill(int argc, char **args)
     }
 
     pid_t pid;
-    int sig = 15;    // default, SIGTERM
-    ++args;    // skip the command
+    int sig = 15;    /* default, SIGTERM */
+    ++args;    /* skip the command */
 
     if ((*args)[0] == '-') {
         if (!isdigit((*args)[1])) {
@@ -23,7 +23,7 @@ int my_kill(int argc, char **args)
             return -1;
         }
         sig = atoi(&(*args)[1]);
-        ++args;    // skip the sig
+        ++args;    /* skip the sig */
     }
 
     pid = atoi(*args);

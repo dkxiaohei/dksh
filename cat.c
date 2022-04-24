@@ -54,7 +54,7 @@ int cat(int argc, char **args)
         if ((fp = fopen(*args++, "r")) == NULL) {
             fprintf(stderr, "cat: %s: No such file or directory\n", *args);
             return_error = TRUE;
-            continue;    // try the next file (if any)
+            continue;    /* try the next file (if any) */
         }
         return_error = do_cat(fp);
     }

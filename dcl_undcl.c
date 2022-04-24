@@ -24,26 +24,26 @@ static int dcl();
 static int dirdcl();
 static void clear();
 
-static int tokentype;  // type of last token
-static char token[MAXTOKEN];  // last token string
-static char name[MAXTOKEN];  // identifier name
-static char datatype[MAXTOKEN];  // data type = char , int , etc.
-static char out[MAXOUT];  // output string
+static int tokentype;  /* type of last token */
+static char token[MAXTOKEN];  /* last token string */
+static char name[MAXTOKEN];  /* identifier name */
+static char datatype[MAXTOKEN];  /* data type = char , int , etc. */
+static char out[MAXOUT];  /* output string */
 
 /* convert declaration to words */
 int my_dcl(int argc, char **args)
 {
     int result;
     printf(DCL_PROMT);
-    while (gettoken() != EOF) {  // 1st token on line
-        strcpy(datatype, token);  // is the datatype
+    while (gettoken() != EOF) {  /* 1st token on line */
+        strcpy(datatype, token);  /* is the datatype */
         if (tokentype == '\n') {
             printf(DCL_PROMT);
             continue;
         }
         out[0] = '\0';
 
-        result = dcl();  // parse rest of line
+        result = dcl();  /* parse rest of line */
         if (result != 0) {
             printf(DCL_PROMT);
             continue;
@@ -147,7 +147,7 @@ static int gettoken()
 static int dcl()
 {
     int ns;
-    for (ns = 0; gettoken() == '*';)  // count of *'s
+    for (ns = 0; gettoken() == '*';)  /* count of *'s */
         ns++;
 
     int result = dirdcl();
@@ -165,7 +165,7 @@ static int dirdcl()
 {
     int type, result;
 
-    if (tokentype == '(') {  // (dcl)
+    if (tokentype == '(') {  /* (dcl) */
         result = dcl();
         if (result != 0)
             return result;
@@ -173,7 +173,7 @@ static int dirdcl()
             fprintf(stderr, "error: missing ')'\n");
             return 1;
         }
-    } else if (tokentype == NAME)  // variable name
+    } else if (tokentype == NAME)  /* variable name */
         strcpy(name, token);
     else {
         fprintf(stderr, "error: expected name or (dcl)\n");

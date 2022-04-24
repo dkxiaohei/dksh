@@ -16,7 +16,7 @@ char * strcasestr(const char *, const char *);
 
 int grep(int argc, char **args)
 {
-    // calloc will initialize the memory to zero
+    /* calloc will initialize the memory to zero */
     char *buf = calloc(BUFSIZE, sizeof(char));
     long lineno = 0;
     int c;
@@ -25,46 +25,46 @@ int grep(int argc, char **args)
     bool except = 0, number = 0, count_only = 0, print_filename = 0, ignore_case = 0;
     bool only_matching = 0, quiet = 0, byte_offset = 0;
     bool files_without_match = 0, files_with_matches = 0;
-    // used as the 2nd parameter of getline
+    /* used as the 2nd parameter of getline */
     size_t tmp = BUFSIZE;
     FILE *fs;
     char *filename, *label = NULL;
 
-    // parse the options
+    /* parse the options */
     while(--argc > 0 && (*++args)[0] == '-') {
-        // prevent the value of args[0] (which is a pointer) from being changed
+        /* prevent the value of args[0] (which is a pointer) from being changed */
         char *saved_args_0 = args[0];
 
         while((c = *++saved_args_0))
             switch(c)
             {
-                // invert the sense of matching, to select non-matching lines
+                /* invert the sense of matching, to select non-matching lines */
                 case 'v':  except = 1;  break;
-                // prefix each line of output with the 1-based line number
-                // within its input file
+                /* prefix each line of output with the 1-based line number */
+                /* within its input file */
                 case 'n':  number = 1;  break;
-                // only a count of selected lines is written to standard output
+                /* only a count of selected lines is written to standard output */
                 case 'c':  count_only = 1;  break;
-                // always print filename headers with output lines
+                /* always print filename headers with output lines */
                 case 'H':  print_filename = 1;  break;
-                // never print filename headers (i.e., filenames) with output lines
+                /* never print filename headers (i.e., filenames) with output lines */
                 case 'h':  print_filename = 0;  break;
-                // perform case insensitive matching
+                /* perform case insensitive matching */
                 case 'i':  ignore_case = 1;  break;
-                // prints only the matching part of the lines
+                /* prints only the matching part of the lines */
                 case 'o':  only_matching = 1;  break;
-                // quiet mode: suppress normal output
+                /* quiet mode: suppress normal output */
                 case 'q':  quiet = 1;  break;
-                // the offset in bytes of a matched pattern is displayed
-                // in front of the respective matched line
+                /* the offset in bytes of a matched pattern is displayed */
+                /* in front of the respective matched line */
                 case 'b':  byte_offset = 1;  break;
-                // only the names of files not containing selected lines are written to
-                // standard output
+                /* only the names of files not containing selected lines are written to */
+                /* standard output */
                 case 'L':  files_without_match = 1;  files_with_matches = 0;  break;
-                // only the names of files containing selected lines are written to
-                // standard output
+                /* only the names of files containing selected lines are written to */
+                /* standard output */
                 case 'l':  files_with_matches = 1;  files_without_match = 0;  break;
-                // stop reading a file after max_count matching lines
+                /* stop reading a file after max_count matching lines */
                 case 'm':  if (*(saved_args_0 + 1) != '\0') {
                                if (!isdigit(*(saved_args_0 + 1))) {
                                    printf("grep: invalid max count\n");
@@ -72,7 +72,7 @@ int grep(int argc, char **args)
                                    return 2;
                                }
                                max_count = atoi(saved_args_0 + 1);
-                               // step over the NUM after '-m'
+                               /* step over the NUM after '-m' */
                                while (*(++saved_args_0 + 1) != '\0')
                                    ;
                            } else {
@@ -82,21 +82,21 @@ int grep(int argc, char **args)
                                    return 2;
                                }
                                max_count = atoi(*++args);
-                               // step over the NUM after '-m'
+                               /* step over the NUM after '-m' */
                                --argc;
                            }
                            break;
-                // options starting with '--'
+                /* options starting with '--' */
                 case '-':  if (strcmp(saved_args_0 + 1, "label") == 0) {
                                label = *++args;
-                               // step over the remaining of the option '--label'
+                               /* step over the remaining of the option '--label' */
                                while (*(++saved_args_0 + 1) != '\0')
                                    ;
-                               // step over the LABEL after '--label'
+                               /* step over the LABEL after '--label' */
                                --argc;
                                break;
                            }
-                           // fall through to default
+                           /* fall through to default */
                 default:  printf("grep: illegal option %c\n", c);
                           argc = 0;
                           found = -1;
@@ -104,16 +104,16 @@ int grep(int argc, char **args)
             }
     }
 
-    // argc and args have been changed through the while body
+    /* argc and args have been changed through the while body */
     if(argc < 1) {
         printf("Usage: grep -v -n -c -H -h -i -o -q -b -L -l -m <num> --label <LABEL> pattern [file]\n");
         clean_up(buf);
         return 2;
     }
-    if (argc == 1) {    // if no file specified, then use STDIN
+    if (argc == 1) {    /* if no file specified, then use STDIN */
         fs = stdin;
         filename = (label == NULL) ? "(standard input)" : label;
-    } else {    // argc == 2
+    } else {    /* argc == 2 */
         filename = *(args + 1);
         fs = fopen(filename, "r");
         if (!fs) {
@@ -123,7 +123,7 @@ int grep(int argc, char **args)
         }
     }
 
-    // <stdio.h>: ssize_t getline(char **lineptr, size_t *n, FILE *stream);
+    /* <stdio.h>: ssize_t getline(char **lineptr, size_t *n, FILE *stream); */
     while (getline(&buf, &tmp, fs) > 0) {
         if (max_count >= 0 && found >= max_count)
             break;
@@ -131,7 +131,7 @@ int grep(int argc, char **args)
         lineno++;
 
         char *result = my_strstr(buf, *args, ignore_case);;
-        // kind of tricky
+        /* kind of tricky */
         if((result != NULL) != except)
         {
             found++;
@@ -164,7 +164,7 @@ int grep(int argc, char **args)
 
         str_size += strlen(buf);
 
-        // clear buf before reading the next line
+        /* clear buf before reading the next line */
         memset(buf, 0, BUFSIZE);
     }
 

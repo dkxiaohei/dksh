@@ -13,7 +13,7 @@ int wc(int argc, char **args)
     int fd;
 
     if (argc < 2 || strcmp(args[1], "-") == 0)
-        fd = 0;  // STDIN
+        fd = 0;  /* STDIN */
     else {
         fd = open(args[1], O_RDONLY);
         if (fd == -1) {
@@ -40,7 +40,7 @@ int wc(int argc, char **args)
             line_num, word_num, char_num,
             fd == 0 ? "(STDIN)" : args[1]);
 
-    if (fd != 0)  // not STDIN
+    if (fd != 0)  /* not STDIN */
         if (close(fd) == -1) {
             perror("close");
             return -1;

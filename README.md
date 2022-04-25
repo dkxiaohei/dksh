@@ -89,7 +89,7 @@ This repository, which is compatible with ANSI C, has been tested on **Ubuntu**,
     10. wc:
         (1) wc: read from STDIN
         (2) wc -: read from STDIN
-        (2) wc <file>
+        (3) wc <file(s)>
 
     11. date:
         (1) date

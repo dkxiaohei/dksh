@@ -7,11 +7,10 @@
 #include <signal.h>
 #include <libgen.h>
 
-#define FALSE 0
-#define TRUE 1
-#define LINEMAX 80
+#include "dksh.h"
+
 #define ARGMAX 16
-#define BUFSIZE 512
+#define LINEMAX 80
 #define HISTMAX 500
 
 /* file static variables */

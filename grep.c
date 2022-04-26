@@ -5,7 +5,7 @@
 #include <stdlib.h>
 #include <ctype.h>
 
-#define BUFSIZE 512
+#include "dksh.h"
 
 typedef int bool;
 

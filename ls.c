@@ -10,8 +10,8 @@
 #include <grp.h>
 #include <time.h>
 
-#define FALSE 0
-#define TRUE 1
+#include "dksh.h"
+
 #define STR_SIZE sizeof("rwxrwxrwx")
 
 /* include SUID, SGID, and sticky-bit information in returned string */

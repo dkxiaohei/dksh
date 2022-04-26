@@ -6,9 +6,7 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 
-#define BUFSIZE 512
-#define FALSE 0
-#define TRUE 1
+#include "dksh.h"
 
 int tee(int argc, char **args)
 {

@@ -3,7 +3,7 @@
 #include <fcntl.h>
 #include <string.h>
 
-#define LINEMAX 512
+#include "dksh.h"
 
 static int total_line_num;
 static int total_word_num;
@@ -51,7 +51,7 @@ static void init()
 
 static int do_wc(int fd, char *filename)
 {
-    char buf[LINEMAX];
+    char buf[BUFSIZE];
     int line_num = 0, word_num = 0, char_num = 0;
     int i, n, in_word = 0;
 

@@ -2,9 +2,7 @@
 #include <string.h>
 #include <unistd.h>
 
-#define FALSE 0
-#define TRUE 1
-#define BUFSIZE 512
+#include "dksh.h"
 
 static char buf[BUFSIZE];
 static int print_lineno;

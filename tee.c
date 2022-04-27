@@ -29,8 +29,7 @@ int tee(int argc, char **args)
         for (i = 1; i < argc; i++, args++) {
             fd[i] = open(*args, flags, 0664);
             if (!fd[i]) {
-                fprintf(stderr, "tee: %s: No such file or directory\n",
-                        *args);
+                fprintf(stderr, "tee: %s: No such file or directory\n", *args);
                 free(fd);
                 return -1;
             }
@@ -56,5 +55,6 @@ int tee(int argc, char **args)
             }
 
     free(fd);
+
     return 0;
 }

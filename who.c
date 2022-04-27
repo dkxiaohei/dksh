@@ -40,8 +40,8 @@ int who(int argc, char **args)
 #endif  /* __APPLE__ */
         if (ut->ut_type == 7) {    /* only display USER_PROCESS (7) */
             printf("%-8s ", ut->ut_user);
-            printf("%5ld %-6.6s %-15.15s ", (long) ut->ut_pid,
-                    ut->ut_line, ut->ut_host);
+            printf("%5ld %-6.6s %-15.15s ", (long) ut->ut_pid, ut->ut_line,
+                    ut->ut_host);
             /* printf("%s", ctime((time_t *) &(ut->ut_tv.tv_sec))); */
             t = ut->ut_tv.tv_sec;
             printf("%s", ctime(&t));

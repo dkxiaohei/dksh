@@ -7,15 +7,12 @@
 int my_kill(int argc, char **args)
 {
     if (argc < 2) {
-        fprintf(stderr,
-                "Usage: %s -<signum (default as 15)> <pid>\n",
-                args[0]);
+        fprintf(stderr, "Usage: %s -<signum (default as 15)> <pid>\n", args[0]);
         return -1;
     }
 
-    pid_t pid;
     int sig = 15;    /* default, SIGTERM */
-    ++args;    /* skip the command */
+    ++args;    /* skip the command itself */
 
     if ((*args)[0] == '-') {
         if (!isdigit((*args)[1])) {
@@ -26,7 +23,7 @@ int my_kill(int argc, char **args)
         ++args;    /* skip the sig */
     }
 
-    pid = atoi(*args);
+    pid_t pid = atoi(*args);
     if (kill(pid, sig) == -1) {
         perror("kill");
         return -1;

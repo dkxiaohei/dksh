@@ -36,8 +36,7 @@ int grep(int argc, char **args)
         char *saved_args_0 = args[0];
 
         while((c = *++saved_args_0))
-            switch(c)
-            {
+            switch(c) {
                 /* invert the sense of matching, to select non-matching lines */
                 case 'v':  except = 1;  break;
                 /* prefix each line of output with the 1-based line number */

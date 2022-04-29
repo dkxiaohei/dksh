@@ -19,10 +19,10 @@
 
 enum { NAME, PARAMS, BRACKETS };
 
-static int gettoken();
-static int dcl();
-static int dirdcl();
-static void clear();
+static int gettoken(void);
+static int dcl(void);
+static int dirdcl(void);
+static void clear(void);
 
 static int tokentype;  /* type of last token */
 static char token[MAXTOKEN];  /* last token string */
@@ -102,7 +102,7 @@ int undcl(int argc, char **args)
     return 0;
 }
 
-static void clear()
+static void clear(void)
 {
     token[0] = '\0';
     name[0] = '\0';
@@ -111,7 +111,7 @@ static void clear()
 }
 
 /* return next token */
-static int gettoken()
+static int gettoken(void)
 {
     int c;
     char *cursor = token;
@@ -123,28 +123,28 @@ static int gettoken()
         if ((c = getchar()) == ')') {
             strcpy(token, "()");
             return tokentype = PARAMS;
-        } else {
-            ungetc(c, stdin);
-            return tokentype = '(';
         }
-    } else if (c == '[') {
+        ungetc(c, stdin);
+        return tokentype = '(';
+    }
+    if (c == '[') {
         for (*cursor++ = c; (*cursor++ = getchar()) != ']';)
             ;
         *cursor = '\0';
         return tokentype = BRACKETS;
-    } else if (isalpha(c)) {
+    }
+    if (isalpha(c)) {
         for (*cursor++ = c; isalnum(c = getchar());)
             *cursor++ = c;
         *cursor = '\0';
         ungetc(c, stdin);
         return tokentype = NAME;
-    } else {
-        return tokentype = c;
     }
+    return tokentype = c;
 }
 
 /* dcl: parse a declarator */
-static int dcl()
+static int dcl(void)
 {
     int ns;
     for (ns = 0; gettoken() == '*';)  /* count of *'s */
@@ -161,7 +161,7 @@ static int dcl()
 }
 
 /* dirdcl: parse a direct declarator */
-static int dirdcl()
+static int dirdcl(void)
 {
     int type, result;
 

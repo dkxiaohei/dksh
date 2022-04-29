@@ -11,7 +11,7 @@ static int squeeze_empty_lines;
 static int is_last_line_empty;
 static int lineno;
 
-static void init();
+static void init(void);
 static int do_cat(FILE *);
 
 int cat(int argc, char **args)
@@ -60,7 +60,7 @@ int cat(int argc, char **args)
     return return_error ? -1 : 0;
 }
 
-static void init()
+static void init(void)
 {
     print_lineno = FALSE;
     print_non_blank_lineno = FALSE;

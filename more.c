@@ -43,40 +43,39 @@ int more(int argc, char **args)
         fprintf(stderr, "%s is not a file\n", args[1]);
         return -1;
     }
-    else {
-        FILE *fp_tty_in, *fp_tty_out;
-        fp_tty_in = fopen("/dev/tty", "r");
-        fp_tty_out = fopen("/dev/tty", "w");
 
-        struct termios settings, initials;
-        tcgetattr(STDIN_FILENO, &initials);
-        settings = initials;
-        settings.c_lflag &= ~ICANON;
-        settings.c_lflag &= ~ECHO;
-        settings.c_cc[VMIN] = 1;
-        settings.c_cc[VTIME] = 0;
+    FILE *fp_tty_in, *fp_tty_out;
+    fp_tty_in = fopen("/dev/tty", "r");
+    fp_tty_out = fopen("/dev/tty", "w");
 
-        if (tcsetattr(STDIN_FILENO, TCSAFLUSH, &settings) != 0)
-            fprintf(stderr, "Could not set attributes\n");
+    struct termios settings, initials;
+    tcgetattr(STDIN_FILENO, &initials);
+    settings = initials;
+    settings.c_lflag &= ~ICANON;
+    settings.c_lflag &= ~ECHO;
+    settings.c_cc[VMIN] = 1;
+    settings.c_cc[VTIME] = 0;
 
-        while (fgets(line, LINELEN, fp) != NULL) {
-            if (i == PAGELEN) {
-                j = more_display(fp_tty_in);
-                if (j == 0)
-                    break;
-                i -= j;
-            }
-            if (fputs(line, fp_tty_out) == EOF) {
-                tcsetattr(STDIN_FILENO, TCSANOW, &settings);
+    if (tcsetattr(STDIN_FILENO, TCSAFLUSH, &settings) != 0)
+        fprintf(stderr, "Could not set attributes\n");
+
+    while (fgets(line, LINELEN, fp) != NULL) {
+        if (i == PAGELEN) {
+            j = more_display(fp_tty_in);
+            if (j == 0)
                 break;
-            }
-            i++;
+            i -= j;
         }
-
-        tcsetattr(STDIN_FILENO, TCSANOW, &initials);
-        fclose(fp_tty_in);
-        fclose(fp_tty_out);
+        if (fputs(line, fp_tty_out) == EOF) {
+            tcsetattr(STDIN_FILENO, TCSANOW, &settings);
+            break;
+        }
+        i++;
     }
+
+    tcsetattr(STDIN_FILENO, TCSANOW, &initials);
+    fclose(fp_tty_in);
+    fclose(fp_tty_out);
 
     fclose(fp);
 

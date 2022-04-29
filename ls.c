@@ -69,8 +69,7 @@ static void display_stat(struct stat *s)
 
     printf("%s ", file_perm(s->st_mode, 1));
     printf("%3ld ", (long)s->st_nlink);
-    printf("%s %s ", user_name_from_id(s->st_uid),
-            group_name_from_id(s->st_gid));
+    printf("%s %s ", user_name_from_id(s->st_uid), group_name_from_id(s->st_gid));
     printf("%9lld ", (long long)s->st_size);
     printf("%.20s ", ctime(&s->st_mtime) + 4);
 }
@@ -133,9 +132,7 @@ int ls(int argc, char **args)
     for (i = 0; i < (argc == 0 ? 1 : argc); i++) {
         /* read the stat to distinguish regular files from directories */
         if ((stat((argc == 0) ? "." : args[i], &path_stat)) != 0) {
-            fprintf(stderr,
-                    "ls: stat: %s: No such file or directory\n",
-                    args[i]);
+            fprintf(stderr, "ls: stat: %s: No such file or directory\n", args[i]);
             error[i] = TRUE;
             return_error = TRUE;
         }
@@ -143,13 +140,10 @@ int ls(int argc, char **args)
         /* a directory, scan it */
         if (S_ISDIR(path_stat.st_mode) && !no_scan) {
             /* if no directory is specified (argc == 0), then scan "." */
-            sum[i] = scandir((argc == 0 ? "." : args[i]),
-                    &namelist[i], NULL, alphasort);
+            sum[i] = scandir((argc == 0 ? "." : args[i]), &namelist[i], NULL, alphasort);
 
             if (sum[i] < 0) {
-                fprintf(stderr,
-                        "ls: scandir: %s: No such file or directory\n",
-                        args[i]);
+                fprintf(stderr, "ls: scandir: %s: No such file or directory\n", args[i]);
                 error[i] = TRUE;
                 return_error = TRUE;
             }

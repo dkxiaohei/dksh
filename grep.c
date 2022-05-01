@@ -7,10 +7,8 @@
 
 #include "dksh.h"
 
-typedef int bool;
-
 static void clean_up(char *);
-static char * my_strstr(const char *, const char *, bool);
+static char * my_strstr(const char *, const char *, int);
 
 char * strcasestr(const char *, const char *);
 
@@ -19,12 +17,11 @@ int grep(int argc, char **args)
     /* calloc will initialize the memory to zero */
     char *buf = calloc(BUFSIZE, sizeof(char));
     long lineno = 0;
-    int c;
-    int found = 0, max_count = -1;
+    int c, found = 0, max_count = -1;
     size_t str_size = 0;
-    bool except = 0, number = 0, count_only = 0, print_filename = 0, ignore_case = 0;
-    bool only_matching = 0, quiet = 0, byte_offset = 0;
-    bool files_without_match = 0, files_with_matches = 0;
+    int except = 0, number = 0, count_only = 0, print_filename = 0, ignore_case = 0;
+    int only_matching = 0, quiet = 0, byte_offset = 0;
+    int files_without_match = 0, files_with_matches = 0;
     /* used as the 2nd parameter of getline */
     size_t tmp = BUFSIZE;
     FILE *fs;
@@ -35,7 +32,7 @@ int grep(int argc, char **args)
         /* prevent the value of args[0] (which is a pointer) from being changed */
         char *saved_args_0 = args[0];
 
-        while((c = *++saved_args_0))
+        while((c = *++saved_args_0)) {
             switch(c) {
                 /* invert the sense of matching, to select non-matching lines */
                 case 'v':  except = 1;  break;
@@ -72,8 +69,7 @@ int grep(int argc, char **args)
                                }
                                max_count = atoi(saved_args_0 + 1);
                                /* step over the NUM after '-m' */
-                               while (*(++saved_args_0 + 1) != '\0')
-                                   ;
+                               while (*(++saved_args_0 + 1) != '\0') {}
                            } else {
                                if (!isdigit(args[1][0])) {
                                    printf("grep: invalid max count\n");
@@ -89,8 +85,7 @@ int grep(int argc, char **args)
                 case '-':  if (strcmp(saved_args_0 + 1, "label") == 0) {
                                label = *++args;
                                /* step over the remaining of the option '--label' */
-                               while (*(++saved_args_0 + 1) != '\0')
-                                   ;
+                               while (*(++saved_args_0 + 1) != '\0') {}
                                /* step over the LABEL after '--label' */
                                --argc;
                                break;
@@ -101,6 +96,7 @@ int grep(int argc, char **args)
                           found = -1;
                           break;
             }
+        }
     }
 
     /* argc and args have been changed through the while body */
@@ -124,28 +120,31 @@ int grep(int argc, char **args)
 
     /* <stdio.h>: ssize_t getline(char **lineptr, size_t *n, FILE *stream); */
     while (getline(&buf, &tmp, fs) > 0) {
-        if (max_count >= 0 && found >= max_count)
+        if (max_count >= 0 && found >= max_count) {
             break;
+        }
 
         lineno++;
 
         char *result = my_strstr(buf, *args, ignore_case);;
         /* kind of tricky */
-        if((result != NULL) != except)
-        {
+        if((result != NULL) != except) {
             found++;
             if (!quiet && !count_only && !files_without_match && !files_with_matches) {
-                if (print_filename)
+                if (print_filename) {
                     printf("%s:", filename);
+                }
 
-                if (number)
+                if (number) {
                     printf("%ld:", lineno);
+                }
 
                 if (byte_offset) {
-                    if (only_matching)
+                    if (only_matching) {
                         printf("%ld:", str_size + (result - buf));
-                    else
+                    } else {
                         printf("%ld:", str_size);
+                    }
                 }
 
                 if (only_matching) {
@@ -167,8 +166,9 @@ int grep(int argc, char **args)
         memset(buf, 0, BUFSIZE);
     }
 
-    if (!quiet && count_only && !files_without_match && !files_with_matches)
+    if (!quiet && count_only && !files_without_match && !files_with_matches) {
         printf("%d\n", found);
+    }
 
     if (found == 0 && files_without_match) {
         printf("%s\n", filename);
@@ -176,22 +176,25 @@ int grep(int argc, char **args)
 
     clean_up(buf);
 
-    if (fs != stdin)
+    if (fs != stdin) {
         if (fclose(fs) == EOF) {
             perror("close");
             return 2;
         }
+    }
 
     return found > 0 ? 0 : 1;
 }
 
 static void clean_up(char *buf) {
-    if (buf)
+    if (buf) {
         free(buf);
+    }
 }
 
-static char * my_strstr(const char *haystack, const char *needle, bool ignore_case) {
-    if (ignore_case)
+static char * my_strstr(const char *haystack, const char *needle, int ignore_case) {
+    if (ignore_case) {
         return strcasestr(haystack, needle);
+    }
     return strstr(haystack, needle);
 }

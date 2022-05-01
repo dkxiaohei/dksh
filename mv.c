@@ -7,8 +7,7 @@ int mv(int argc, char **args)
         return -1;
     }
 
-    int ret = rename(args[1], args[2]);
-    if (ret) {
+    if (rename(args[1], args[2]) != 0) {
         perror("rename");
         return -1;
     }

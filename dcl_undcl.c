@@ -54,8 +54,9 @@ int my_dcl(int argc, char **args)
             continue;
         }
 
-        if (name[0] != '\0')
+        if (name[0] != '\0') {
             printf("%s: %s %s\n", name, out, datatype);
+        }
 
         clear();
         printf(DCL_PROMT);
@@ -80,20 +81,23 @@ int undcl(int argc, char **args)
         out[0] = '\0';
         strcpy(out, token);
 
-        while ((type = gettoken()) != '\n')
-            if (type == PARAMS || type == BRACKETS)
+        while ((type = gettoken()) != '\n') {
+            if (type == PARAMS || type == BRACKETS) {
                 strcat(out, token);
-            else if (type == '*') {
+            } else if (type == '*') {
                 sprintf(temp, "(*%s)", out);
                 strcpy(out, temp);
             } else if (type == NAME) {
                 sprintf(temp, "%s %s", token, out);
                 strcpy(out, temp);
-            } else
+            } else {
                 fprintf(stderr, "invalid input at %s\n", token);
+            }
+        }
 
-        if (out[0] != '\0')
+        if (out[0] != '\0') {
             printf("%s\n", out);
+        }
 
         clear();
         printf(UNDCL_PROMT);
@@ -116,8 +120,7 @@ static int gettoken(void)
     int c;
     char *cursor = token;
 
-    while ((c = getchar()) == ' ' || c == '\t')
-        ;
+    while ((c = getchar()) == ' ' || c == '\t') {}
 
     if (c == '(') {
         if ((c = getchar()) == ')') {
@@ -128,14 +131,14 @@ static int gettoken(void)
         return tokentype = '(';
     }
     if (c == '[') {
-        for (*cursor++ = c; (*cursor++ = getchar()) != ']';)
-            ;
+        for (*cursor++ = c; (*cursor++ = getchar()) != ']';) {}
         *cursor = '\0';
         return tokentype = BRACKETS;
     }
     if (isalpha(c)) {
-        for (*cursor++ = c; isalnum(c = getchar());)
+        for (*cursor++ = c; isalnum(c = getchar());) {
             *cursor++ = c;
+        }
         *cursor = '\0';
         ungetc(c, stdin);
         return tokentype = NAME;
@@ -147,15 +150,18 @@ static int gettoken(void)
 static int dcl(void)
 {
     int ns;
-    for (ns = 0; gettoken() == '*';)  /* count of *'s */
+    for (ns = 0; gettoken() == '*';) {  /* count of *'s */
         ns++;
+    }
 
     int result = dirdcl();
-    if (result != 0)
+    if (result != 0) {
         return result;
+    }
 
-    while (ns-- > 0)
+    while (ns-- > 0) {
         strcat(out, " pointer to");
+    }
 
     return 0;
 }
@@ -167,27 +173,29 @@ static int dirdcl(void)
 
     if (tokentype == '(') {  /* (dcl) */
         result = dcl();
-        if (result != 0)
+        if (result != 0) {
             return result;
+        }
         if (tokentype != ')') {
             fprintf(stderr, "error: missing ')'\n");
             return 1;
         }
-    } else if (tokentype == NAME)  /* variable name */
+    } else if (tokentype == NAME) {  /* variable name */
         strcpy(name, token);
-    else {
+    } else {
         fprintf(stderr, "error: expected name or (dcl)\n");
         return 1;
     }
 
-    while ((type = gettoken()) == PARAMS || type == BRACKETS)
-        if (type == PARAMS)
+    while ((type = gettoken()) == PARAMS || type == BRACKETS) {
+        if (type == PARAMS) {
             strcat(out, " function returning");
-        else {
+        } else {
             strcat(out, " array");
             strcat(out, token);
             strcat(out, " of");
         }
+    }
 
     return 0;
 }

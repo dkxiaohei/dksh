@@ -12,67 +12,17 @@
 
 #include "dksh.h"
 
-#define STR_SIZE sizeof("rwxrwxrwx")
-
 /* include SUID, SGID, and sticky-bit information in returned string */
 #define FP_SPECIAL 1
 
-char perm_str[STR_SIZE];
+#define STR_SIZE sizeof("rwxrwxrwx")
 
-static char *file_perm(mode_t perm, int flags)
-{
-    snprintf(perm_str, STR_SIZE, "%c%c%c%c%c%c%c%c%c",
-            (perm & S_IRUSR) ? 'r' : '-', (perm & S_IWUSR) ? 'w' : '-',
-            (perm & S_IXUSR) ?
-                (((perm & S_ISUID) && (flags && FP_SPECIAL)) ? 's' : 'x') :
-                (((perm & S_ISUID) && (flags && FP_SPECIAL)) ? 'S' : '-'),
-            (perm & S_IRGRP) ? 'r' : '-', (perm & S_IWGRP) ? 'w' : '-',
-            (perm & S_IXGRP) ?
-                (((perm & S_ISGID) && (flags && FP_SPECIAL)) ? 's' : 'x') :
-                (((perm & S_ISGID) && (flags && FP_SPECIAL)) ? 'S' : '-'),
-            (perm & S_IROTH) ? 'r' : '-', (perm & S_IWOTH) ? 'w' : '-',
-            (perm & S_IXOTH) ?
-                (((perm & S_ISVTX) && (flags && FP_SPECIAL)) ? 't' : 'x') :
-                (((perm & S_ISVTX) && (flags && FP_SPECIAL)) ? 'T' : '-'));
+static char perm_str[STR_SIZE];
 
-    return perm_str;
-}
-
-static char *user_name_from_id(uid_t uid)
-{
-    struct passwd *pwd;
-    pwd = getpwuid(uid);
-
-    return (pwd == NULL) ? NULL : pwd->pw_name;
-}
-
-static char *group_name_from_id(gid_t gid)
-{
-    struct group *grp;
-    grp = getgrgid(gid);
-
-    return (grp == NULL) ? NULL : grp->gr_name;
-}
-
-static void display_stat(struct stat *s)
-{
-    switch (s->st_mode & S_IFMT) {
-        case S_IFREG:  putchar('-');  break;
-        case S_IFDIR:  putchar('d');  break;
-        case S_IFCHR:  putchar('c');  break;
-        case S_IFBLK:  putchar('b');  break;
-        case S_IFLNK:  putchar('l');  break;
-        case S_IFIFO:  putchar('p');  break;
-        case S_IFSOCK:  putchar('s');  break;
-        default:  putchar('?');  break;
-    }
-
-    printf("%s ", file_perm(s->st_mode, 1));
-    printf("%3ld ", (long)s->st_nlink);
-    printf("%s %s ", user_name_from_id(s->st_uid), group_name_from_id(s->st_gid));
-    printf("%9lld ", (long long)s->st_size);
-    printf("%.20s ", ctime(&s->st_mtime) + 4);
-}
+static char *file_perm(mode_t, int);
+static char *user_name_from_id(uid_t);
+static char *group_name_from_id(gid_t);
+static void display_stat(const struct stat *);
 
 int ls(int argc, char **args)
 {
@@ -90,7 +40,7 @@ int ls(int argc, char **args)
         /* prevent args[0] (a pointer to char) from being changed */
         char *save_args_0 = args[0];
 
-        while ((option = *++save_args_0))
+        while ((option = *++save_args_0)) {
             switch (option) {
                 case 'a':  ls_all = TRUE;  break;    /* show hidden files */
                 case 'l':  ls_long = TRUE;  break;    /* show details */
@@ -102,11 +52,13 @@ int ls(int argc, char **args)
                                   option);
                           return -1;
             }
+        }
     }
 
     /* if there're multiple directories, print their names respectively */
-    if (argc > 1)
+    if (argc > 1) {
         print_dirname = TRUE;
+    }
 
     /* calloc: initial value set to 0 */
     error = calloc((argc == 0 ? 1 : argc), sizeof(int));
@@ -147,8 +99,7 @@ int ls(int argc, char **args)
                 error[i] = TRUE;
                 return_error = TRUE;
             }
-        }
-        else {    /* not a directory, just print it */
+        } else {    /* not a directory, just print it */
             has_regular = TRUE;
 
             if (!error[i]) {
@@ -156,11 +107,13 @@ int ls(int argc, char **args)
                 /* when scanning directories */
                 error[i] = TRUE;
 
-                if (ls_inode)
+                if (ls_inode) {
                     printf("%ld ", (long)path_stat.st_ino);
+                }
 
-                if (ls_long)
+                if (ls_long) {
                     display_stat(&path_stat);
+                }
 
                 printf("%s\n", (argc == 0) ? "." : args[i]);
             }
@@ -182,16 +135,18 @@ int ls(int argc, char **args)
                 chdir(args[i]);
                 printf((i == 0 && !has_regular) ? "" : "\n");
 
-                if (print_dirname)
+                if (print_dirname) {
                     printf("%s:\n", args[i]);
+                }
 
                 for (j = 0; j < sum[i]; j++) {
                     /* without "-a" option, do not show hidden files */
                     if (!ls_all && namelist[i][j]->d_name[0] == '.') {
                         hidden_count++;
 
-                        if (namelist[i][j])
+                        if (namelist[i][j]) {
                             free(namelist[i][j]);
+                        }
                         continue;
                     }
 
@@ -200,11 +155,13 @@ int ls(int argc, char **args)
                         return -1;
                     }
 
-                    if (ls_inode)
+                    if (ls_inode) {
                         printf("%ld ", (long)path_stat.st_ino);
+                    }
 
-                    if (ls_long)
+                    if (ls_long) {
                         display_stat(&path_stat);
+                    }
 
                     count++;
                     printf("%-10s%s", namelist[i][j]->d_name,
@@ -213,15 +170,18 @@ int ls(int argc, char **args)
                              count < sum[i] - hidden_count) ?
                             "\n" : "  ");
 
-                    if (namelist[i][j])
+                    if (namelist[i][j]) {
                         free(namelist[i][j]);
+                    }
                 }
 
-                if (!ls_long)
+                if (!ls_long) {
                     printf("\n");
+                }
 
-                if (namelist[i])
+                if (namelist[i]) {
                     free(namelist[i]);
+                }
 
                 chdir(oldpwd);
                 free(oldpwd);
@@ -230,10 +190,67 @@ int ls(int argc, char **args)
     }
 
     /* free the allocated memory */
-    if (error)
+    if (error) {
         free(error);
-    if (namelist)
+    }
+    if (namelist) {
         free(namelist);
+    }
 
     return return_error ? -1 : 0;
+}
+
+static char *file_perm(mode_t perm, int flags)
+{
+    snprintf(perm_str, STR_SIZE, "%c%c%c%c%c%c%c%c%c",
+            (perm & S_IRUSR) ? 'r' : '-', (perm & S_IWUSR) ? 'w' : '-',
+            (perm & S_IXUSR) ?
+                (((perm & S_ISUID) && (flags && FP_SPECIAL)) ? 's' : 'x') :
+                (((perm & S_ISUID) && (flags && FP_SPECIAL)) ? 'S' : '-'),
+            (perm & S_IRGRP) ? 'r' : '-', (perm & S_IWGRP) ? 'w' : '-',
+            (perm & S_IXGRP) ?
+                (((perm & S_ISGID) && (flags && FP_SPECIAL)) ? 's' : 'x') :
+                (((perm & S_ISGID) && (flags && FP_SPECIAL)) ? 'S' : '-'),
+            (perm & S_IROTH) ? 'r' : '-', (perm & S_IWOTH) ? 'w' : '-',
+            (perm & S_IXOTH) ?
+                (((perm & S_ISVTX) && (flags && FP_SPECIAL)) ? 't' : 'x') :
+                (((perm & S_ISVTX) && (flags && FP_SPECIAL)) ? 'T' : '-'));
+
+    return perm_str;
+}
+
+static char *user_name_from_id(uid_t uid)
+{
+    struct passwd *pwd;
+    pwd = getpwuid(uid);
+
+    return !pwd ? NULL : pwd->pw_name;
+}
+
+static char *group_name_from_id(gid_t gid)
+{
+    struct group *grp;
+    grp = getgrgid(gid);
+
+    return !grp ? NULL : grp->gr_name;
+}
+
+static void display_stat(const struct stat *s)
+{
+    switch (s->st_mode & S_IFMT) {
+        case S_IFREG:  putchar('-');  break;
+        case S_IFDIR:  putchar('d');  break;
+        case S_IFCHR:  putchar('c');  break;
+        case S_IFBLK:  putchar('b');  break;
+        case S_IFLNK:  putchar('l');  break;
+        case S_IFIFO:  putchar('p');  break;
+        case S_IFSOCK:  putchar('s');  break;
+        default:  putchar('?');  break;
+    }
+
+    printf("%s ", file_perm(s->st_mode, 1));
+    printf("%3ld ", (long)s->st_nlink);
+    printf("%s %s ", user_name_from_id(s->st_uid), group_name_from_id(s->st_gid));
+    printf("%9lld ", (long long)s->st_size);
+    printf("%.20s ", ctime(&s->st_mtime) + 4);
 }

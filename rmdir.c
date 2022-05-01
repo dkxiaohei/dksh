@@ -8,8 +8,7 @@ int my_rmdir(int argc, char **args)
         return -1;
     }
 
-    int ret = rmdir(args[1]);
-    if (ret) {
+    if (rmdir(args[1]) != 0) {
         perror("rmdir");
         return -1;
     }

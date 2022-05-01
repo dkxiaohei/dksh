@@ -8,6 +8,8 @@
 
 #include "dksh.h"
 
+#define FILEPERM 0644
+
 int tee(int argc, char **args)
 {
     char buf[BUFSIZE];
@@ -24,35 +26,39 @@ int tee(int argc, char **args)
 
     /* the number of files is argc, including STDIN */
     int *fd = calloc(argc, sizeof(int));
-    if (argc > 1)
+    if (argc > 1) {
         /* fd[0] has already been set to 0 (STDIN) by calloc */
         for (i = 1; i < argc; i++, args++) {
-            fd[i] = open(*args, flags, 0664);
-            if (!fd[i]) {
+            fd[i] = open(*args, flags, FILEPERM);
+            if (fd[i] == -1) {
                 fprintf(stderr, "tee: %s: No such file or directory\n", *args);
                 free(fd);
                 return -1;
             }
         }
+    }
 
     /* read from STDIN */
     while ((ret = read(0, buf, sizeof(buf))) > 0) {
-        for (i = 0; i < argc; i++)
+        for (i = 0; i < argc; i++) {
             if (write(fd[i], buf, ret) < 0) {
                 perror("write");
                 free(fd);
                 return -1;
             }
+        }
         memset(buf, 0, sizeof(buf));
     }
 
-    if (argc > 1)
-        for (i = 1; i < argc; i++)    /* excluding STDIN (0) */
-            if (close(fd[i]) == -1) {
+    if (argc > 1) {
+        for (i = 1; i < argc; i++) {    /* excluding STDIN (0) */
+            if (close(fd[i]) != 0) {
                 perror("close");
                 free(fd);
                 return -1;
             }
+        }
+    }
 
     free(fd);
 

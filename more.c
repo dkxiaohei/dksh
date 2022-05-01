@@ -7,26 +7,7 @@
 #define PAGERPROMPT " --More-- "
 #define BACKOVERPROMPT "\b\b\b\b\b\b\b\b\b\b"
 
-static int more_display(FILE *fp)
-{ 
-    char c;
-
-    printf("\033[7m"PAGERPROMPT"\033[m");
-    printf(BACKOVERPROMPT);
-
-    while (1) {
-        fflush(0);
-        c = fgetc(fp);
-        if (c == 'q')
-            return 0;
-        if (c == ' ')
-            return PAGELEN;
-        if (c == '\n')
-            return 1;
-    }
-
-    return 0;
-}
+static int more_display(FILE *);
 
 int more(int argc, char **args)
 {
@@ -37,14 +18,13 @@ int more(int argc, char **args)
 
     int i = 0, j = 0;
     char line[LINELEN];
-    FILE *fp;
+    FILE *fp, *fp_tty_in, *fp_tty_out;
 
     if ((fp = fopen(args[1], "r")) == NULL) {
         fprintf(stderr, "%s is not a file\n", args[1]);
         return -1;
     }
 
-    FILE *fp_tty_in, *fp_tty_out;
     fp_tty_in = fopen("/dev/tty", "r");
     fp_tty_out = fopen("/dev/tty", "w");
 
@@ -56,14 +36,16 @@ int more(int argc, char **args)
     settings.c_cc[VMIN] = 1;
     settings.c_cc[VTIME] = 0;
 
-    if (tcsetattr(STDIN_FILENO, TCSAFLUSH, &settings) != 0)
+    if (tcsetattr(STDIN_FILENO, TCSAFLUSH, &settings) != 0) {
         fprintf(stderr, "Could not set attributes\n");
+    }
 
-    while (fgets(line, LINELEN, fp) != NULL) {
+    while (fgets(line, LINELEN, fp)) {
         if (i == PAGELEN) {
             j = more_display(fp_tty_in);
-            if (j == 0)
+            if (j == 0) {
                 break;
+            }
             i -= j;
         }
         if (fputs(line, fp_tty_out) == EOF) {
@@ -78,6 +60,30 @@ int more(int argc, char **args)
     fclose(fp_tty_out);
 
     fclose(fp);
+
+    return 0;
+}
+
+static int more_display(FILE *fp)
+{ 
+    char c;
+
+    printf("\033[7m"PAGERPROMPT"\033[m");
+    printf(BACKOVERPROMPT);
+
+    while (1) {
+        fflush(0);
+        c = fgetc(fp);
+        if (c == 'q') {
+            return 0;
+        }
+        if (c == ' ') {
+            return PAGELEN;
+        }
+        if (c == '\n') {
+            return 1;
+        }
+    }
 
     return 0;
 }

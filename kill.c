@@ -1,6 +1,5 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <sys/types.h>
 #include <signal.h>
 #include <ctype.h>
 
@@ -24,7 +23,7 @@ int my_kill(int argc, char **args)
     }
 
     pid_t pid = atoi(*args);
-    if (kill(pid, sig) == -1) {
+    if (kill(pid, sig) != 0) {
         perror("kill");
         return -1;
     }

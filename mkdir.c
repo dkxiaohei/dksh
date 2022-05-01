@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <sys/stat.h>
 
+#define DIRPERM 0755
+
 int my_mkdir(int argc, char **args)
 {
     if (argc < 2) {
@@ -8,8 +10,7 @@ int my_mkdir(int argc, char **args)
         return -1;
     }
 
-    int ret = mkdir(args[1], 0775);
-    if (ret) {
+    if (mkdir(args[1], DIRPERM) != 0) {
         perror("mkdir");
         return -1;
     }

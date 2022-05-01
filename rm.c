@@ -8,8 +8,7 @@ int rm(int argc, char **args)
         return -1;
     }
 
-    int ret = unlink(args[1]);
-    if (ret) {
+    if (unlink(args[1]) != 0) {
         perror("unlink");
         return -1;
     }

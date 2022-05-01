@@ -4,15 +4,15 @@
 
 int pwd(void)
 {
-    char *pwd = getcwd(NULL, 0);
+    char *cwd = getcwd(NULL, 0);
 
-    if (!pwd) {
+    if (!cwd) {
         perror("getcwd");
         return -1;
     }
 
-    printf("%s\n", pwd);
-    free(pwd);
+    printf("%s\n", cwd);
+    free(cwd);
 
     return 0;
 }

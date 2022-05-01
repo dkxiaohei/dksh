@@ -1,6 +1,9 @@
 #include <stdio.h>
 #include <time.h>
 
+/* prototypes for extern functions */
+char *ctime_r(const time_t *, char *);
+
 #define BUFSIZE 32
 
 int date(void)

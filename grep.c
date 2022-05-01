@@ -1,5 +1,7 @@
 /* Inspired by K&R C - "The C Progamming Language" */
 
+#define _POSIX_C_SOURCE 200809L  /* for getline() */
+
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -7,10 +9,11 @@
 
 #include "dksh.h"
 
+/* prototypes for extern functions */
+char * strcasestr(const char *, const char *);
+
 static void clean_up(char *);
 static char * my_strstr(const char *, const char *, int);
-
-char * strcasestr(const char *, const char *);
 
 int grep(int argc, char **args)
 {

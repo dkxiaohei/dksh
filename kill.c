@@ -1,7 +1,11 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <sys/types.h>
 #include <signal.h>
 #include <ctype.h>
+
+/* prototypes for extern functions */
+int kill(pid_t, int);
 
 int my_kill(int argc, char **args)
 {

@@ -9,6 +9,10 @@
 
 #include "dksh.h"
 
+/* prototypes for extern functions */
+int gethostname(char *, size_t);
+char *strdup(const char *);
+
 #define LINEMAX 80
 #define ARGMAX 16
 #define HISTMAX 500

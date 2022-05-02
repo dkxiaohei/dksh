@@ -4,6 +4,12 @@
 
 #include "dksh.h"
 
+/* declarations for extern variables */
+extern int opterr, optind;
+
+/* prototypes for extern functions */
+int getopt(int, char *const [], const char *);
+
 static char buf[BUFSIZE];
 static int print_lineno;
 static int print_non_blank_lineno;
@@ -16,10 +22,10 @@ static int do_cat(FILE *);
 
 int cat(int argc, char **args)
 {
-    init();
-
     FILE *fp;
     int opt, return_error = FALSE;
+
+    init();
 
     opterr = 0;
     optind = 1;

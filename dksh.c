@@ -55,26 +55,28 @@ void my_exit(void);
 /* main */
 int main(void)
 {
+    uid_t uid;
     char *prompt = NULL;
     char hostname[32] = {'\0'};
+    /* pipe (IPC): child process passes the return_value to parent process */
+    int pipefd[2];
+    char pipech;    /* represent the return_value, 0 or 1 */
+    int hist_count = 0, same_command = FALSE;
+    char *pwd, *tmp_pwd;
+    int ch, argc;
+    pid_t pid;
+
     gethostname(hostname, (size_t)32);
 
-    uid_t uid;
     /* root (#) or normal ($) */
     prompt = (uid = getuid()) == 0 ? "# " : "$ ";
     setuid(uid);
     setgid(getgid());
 
-    /* pipe (IPC): child process passes the return_value to parent process */
-    int pipefd[2];
-    char pipech;    /* represent the return_value, 0 or 1 */
     if (pipe(pipefd) != 0) {
         perror("pipe");
         exit(EXIT_FAILURE);
     }
-
-    int hist_count = 0;
-    int same_command = FALSE;
 
     /* main loop */
     while (1) {
@@ -86,13 +88,13 @@ int main(void)
         /* get noted about the termination of the background command */
 
         /* print the prompt */
-        char *pwd = getcwd(NULL, 0);
-        char *tmp_pwd = strdup(pwd);
+        pwd = getcwd(NULL, 0);
+        tmp_pwd = strdup(pwd);
         printf("[%s@%s:%s] %s", getenv("USER"), hostname, basename(tmp_pwd), prompt);
         free(pwd);
 
         /* Ctrl-D to exit */
-        int ch = getchar();
+        ch = getchar();
         if (ch == EOF) {
             clean_up();
             printf("\nexit dksh by Ctrl-D\n");
@@ -133,10 +135,9 @@ int main(void)
         }
 
         /* argc is the number of arguments (including the command itself) */
-        int argc = get_args(input);
+        argc = get_args(input);
 
         /* run the command */
-        pid_t pid;
         if (args[0]) {
             /* if the command doesn't start with '-' or '.' */
             /* then it's a built-in command, otherwise fork and execvp */
@@ -189,11 +190,11 @@ int main(void)
 
 static int get_args(const char *input)
 {
+    int i = 0, j;
+
     if (!input) {
         return 0;
     }
-
-    int i = 0, j;
 
     while (1) {
         while (*input == ' ') {    /* omit the preceding blank(s) */
@@ -228,11 +229,12 @@ static int get_args(const char *input)
 
 static void free_args(char **args)
 {
+    int i;
+
     if (!args) {
         return;
     }
 
-    int i;
     for (i = 0; i < ARGMAX; i++) {
         if (args[i]) {
             free(args[i]);
@@ -243,11 +245,12 @@ static void free_args(char **args)
 
 static void free_hist(char **hist)
 {
+    int i;
+
     if (!hist) {
         return;
     }
 
-    int i;
     for (i = 0; hist[i] != NULL; i++) {
         free(hist[i]);
         hist[i] = NULL;

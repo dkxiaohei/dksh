@@ -15,6 +15,7 @@ int tee(int argc, char **args)
     char buf[BUFSIZE];
     int i, ret, flags;
     int append = FALSE;
+    int *fd;
 
     ++args;    /* skip the command itself */
     if (argc > 2 && strcmp(*args, "-a") == 0) {
@@ -25,7 +26,7 @@ int tee(int argc, char **args)
     flags = append ? O_WRONLY|O_CREAT|O_APPEND : O_WRONLY|O_CREAT;
 
     /* the number of files is argc, including STDIN */
-    int *fd = calloc(argc, sizeof(int));
+    fd = calloc(argc, sizeof(int));
     if (argc > 1) {
         /* fd[0] has already been set to 0 (STDIN) by calloc */
         for (i = 1; i < argc; i++, args++) {

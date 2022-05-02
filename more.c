@@ -11,14 +11,15 @@ static int more_display(FILE *);
 
 int more(int argc, char **args)
 {
+    int i = 0, j = 0;
+    char line[LINELEN];
+    FILE *fp, *fp_tty_in, *fp_tty_out;
+    struct termios settings, initials;
+
     if (argc < 2) {
         fprintf(stderr, "Usage: %s <file>\n", args[0]);
         return -1;
     }
-
-    int i = 0, j = 0;
-    char line[LINELEN];
-    FILE *fp, *fp_tty_in, *fp_tty_out;
 
     if ((fp = fopen(args[1], "r")) == NULL) {
         fprintf(stderr, "%s is not a file\n", args[1]);
@@ -28,7 +29,6 @@ int more(int argc, char **args)
     fp_tty_in = fopen("/dev/tty", "r");
     fp_tty_out = fopen("/dev/tty", "w");
 
-    struct termios settings, initials;
     tcgetattr(STDIN_FILENO, &initials);
     settings = initials;
     settings.c_lflag &= ~ICANON;

@@ -25,7 +25,7 @@ int grep(int argc, char **args)
     /* used as the 2nd parameter of getline */
     size_t tmp = BUFSIZE;
     FILE *fs;
-    char *filename, *label = NULL;
+    char *strstr_result, *filename, *label = NULL;
 
     /* parse the options */
     while(--argc > 0 && (*++args)[0] == '-') {
@@ -126,9 +126,9 @@ int grep(int argc, char **args)
 
         lineno++;
 
-        char *result = my_strstr(buf, *args, ignore_case);;
+        strstr_result = my_strstr(buf, *args, ignore_case);;
         /* kind of tricky */
-        if((result != NULL) != except) {
+        if((strstr_result != NULL) != except) {
             found++;
             if (!quiet && !count_only && !files_without_match && !files_with_matches) {
                 if (print_filename) {
@@ -141,7 +141,7 @@ int grep(int argc, char **args)
 
                 if (byte_offset) {
                     if (only_matching) {
-                        printf("%ld:", str_size + (result - buf));
+                        printf("%ld:", str_size + (strstr_result - buf));
                     } else {
                         printf("%ld:", str_size);
                     }

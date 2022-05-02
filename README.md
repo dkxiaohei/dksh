@@ -41,7 +41,7 @@ Hopefully, 'dksh' will grow into a possible substitution for Bash.
 
 ### Compile:
 
-This repository, which is compatible with ANSI C, has been tested on **Ubuntu**, **CentOS** and **macOS**.
+This repository, which is compatible with ANSI C, has been tested on **CentOS**, **Ubuntu** and **macOS**.
 
     1. make (generate the target 'dksh')
     2. make debug (generate the target 'dksh', with debug info)
@@ -153,6 +153,8 @@ This repository, which is compatible with ANSI C, has been tested on **Ubuntu**,
 ### Todo:
     1. support '>' (IO redirection, output)
     2. support '>>' (IO redirection, output, append-only)
-    2. support '<' (IO redirection, input)
-    4. support '&' (background)
-    5. support '|' (pipeline)
+    3. support '<' (IO redirection, input)
+    4. support '<<' (IO redirection, input, here document)
+    5. support '&' (background)
+    6. support '|' (pipeline)
+

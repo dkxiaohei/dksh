@@ -251,6 +251,7 @@ static void display_stat(const struct stat *s)
     printf("%s ", file_perm(s->st_mode, 1));
     printf("%3ld ", (long)s->st_nlink);
     printf("%s %s ", user_name_from_id(s->st_uid), group_name_from_id(s->st_gid));
-    printf("%9lld ", (long long)s->st_size);
+    /* printf("%9lld ", (long long)s->st_size); */
+    printf("%9ld ", (long)s->st_size);
     printf("%.20s ", ctime(&s->st_mtime) + 4);
 }

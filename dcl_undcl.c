@@ -149,12 +149,12 @@ static int gettoken(void)
 /* dcl: parse a declarator */
 static int dcl(void)
 {
-    int ns;
+    int result, ns;
     for (ns = 0; gettoken() == '*';) {  /* count of *'s */
         ns++;
     }
 
-    int result = dirdcl();
+    result = dirdcl();
     if (result != 0) {
         return result;
     }

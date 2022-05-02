@@ -1,6 +1,6 @@
 CC = gcc
-CFLAGS = -Wall -std=c99
-ANSICFLAGS = -Wall -ansi
+CFLAGS = -Wall -std=c99 -pedantic
+ANSICFLAGS = -Wall -ansi -pedantic
 DEBUGFLAGS = -g
 
 object = *.c

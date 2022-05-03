@@ -6,7 +6,7 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 
-#include "dksh.h"
+#include "dksh_common.h"
 
 #define FILEPERM 0644
 

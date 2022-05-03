@@ -7,7 +7,7 @@
 #include <stdlib.h>
 #include <ctype.h>
 
-#include "dksh.h"
+#include "dksh_common.h"
 
 /* prototypes for extern functions */
 char * strcasestr(const char *, const char *);

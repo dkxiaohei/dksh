@@ -2,7 +2,7 @@
 #include <string.h>
 #include <unistd.h>
 
-#include "dksh.h"
+#include "dksh_common.h"
 
 /* declarations for extern variables */
 extern int opterr, optind;

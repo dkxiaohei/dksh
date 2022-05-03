@@ -12,7 +12,7 @@
 #include <grp.h>
 #include <time.h>
 
-#include "dksh.h"
+#include "dksh_common.h"
 
 /* include SUID, SGID, and sticky-bit information in returned string */
 #define FP_SPECIAL 1

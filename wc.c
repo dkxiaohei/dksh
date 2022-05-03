@@ -3,7 +3,7 @@
 #include <fcntl.h>
 #include <string.h>
 
-#include "dksh.h"
+#include "dksh_common.h"
 
 static int total_line_num;
 static int total_word_num;

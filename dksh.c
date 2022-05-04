@@ -13,18 +13,12 @@
 int main(void)
 {
     uid_t uid;
-    char *prompt = NULL;
-    char hostname[32] = {'\0'};
+    char hostname[32] = {'\0'}, *prompt;
     /* pipe (IPC): child process passes the return_value to parent process */
     int pipefd[2];
-    char pipech;    /* represent the return_value, 0 or 1 */
-    int hist_count = 0, same_command = FALSE;
-    char *pwd, *tmp_pwd;
-    int ch, argc;
-    pid_t pid;
+    int argc, hist_count = 0;
 
     gethostname(hostname, (size_t)32);
-
     /* root (#) or normal ($) */
     prompt = (uid = getuid()) == 0 ? "# " : "$ ";
     setuid(uid);
@@ -40,109 +34,91 @@ int main(void)
         /* ignore SIGINT (Ctrl-C), SIGQUIT (Ctrl-\) and SIGTSTP (Ctrl-Z) */
         ignore_signal();
 
-        /* TODO */
-        /* handle SIGCHLD here */
+        /* TODO: handle SIGCHLD here */
         /* get noted about the termination of the background command */
 
-        /* print the prompt */
-        pwd = getcwd(NULL, 0);
-        tmp_pwd = strdup(pwd);
-        printf("[%s@%s:%s] %s", getenv("USER"), hostname, basename(tmp_pwd), prompt);
-        free(pwd);
+        print_promt(prompt, hostname);
+        process_ctrl_d();
 
-        /* Ctrl-D to exit */
-        ch = getchar();
-        if (ch == EOF) {
-            clean_up();
-            printf("\nexit dksh by Ctrl-D\n");
-            my_exit();
-        } else {  /* if the first char is not EOF, then put it back into the STDIN stream */
-            ungetc(ch, stdin);
-        }
-
-        /* get input, add to history and parse args */
+        /* get input, parse args and add to history */
         fgets(input, LINEMAX, stdin);
-
-        /* ignore successive same commands */
-        if (hist_count > 0 && strcmp(hist[hist_count - 1], input) == 0) {
-            same_command = TRUE;
-        } else {
-            same_command = FALSE;
-        }
-        if (!same_command) {
-            if (!hist[hist_count]) {
-                hist[hist_count] = malloc((strlen(input) + 1) * sizeof(char));
-                if (!hist[hist_count]) {
-                    perror("malloc");
-                    clean_up();
-                    exit(EXIT_FAILURE);
-                }
-            } else {
-                char *tmp_hist = hist[hist_count];
-                hist[hist_count] = realloc(tmp_hist, (strlen(input) + 1) * sizeof(char));
-                if (!hist[hist_count]) {
-                    perror("realloc");
-                    free(tmp_hist);
-                    clean_up();
-                    exit(EXIT_FAILURE);
-                }
-            }
-            strcpy(hist[hist_count], input);
-            hist_count = (hist_count + 1) % HISTMAX;
-        }
-
         /* argc is the number of arguments (including the command itself) */
         argc = get_args(input);
+        if (argc > 0) {
+            record_history(&hist_count);
+        }
 
         /* run the command */
-        if (args[0]) {
-            /* if the command doesn't start with '-' or '.' */
-            /* then it's a built-in command, otherwise fork and execvp */
-            if (args[0][0] != '-' && args[0][0] != '.') {
-                built_in(argc, args);
-            } else if ((pid = fork()) < 0) {    /* if fork fails */
-                perror("fork");
-                clean_up();
-                exit(EXIT_FAILURE);
-            } else if (pid == 0) {    /* child process */
-                close(pipefd[0]);    /* close unused read end of pipe */
-                if (args[0][0] == '-') {    /* call Bash commands */
-                    /* &args[0][1]: excluding the preceding '-' */
-                    if (execvp(&args[0][1], args) == -1) {
-                        write(pipefd[1], "1", 1);
-                        close(pipefd[1]);    /* reader will see EOF */
-                        fprintf(stderr, "bash: %s: command not found\n", &args[0][1]);
-                        /* exit() is unreliable here, so _exit must be used */
-                        _exit(EXIT_FAILURE);
-                    } else {
-                        write(pipefd[1], "0", 1);
-                        close(pipefd[1]);
-                    }
-                } else if (args[0][0] == '.') {    /* user's program ("./<program name>") */
-                    if (execvp(args[0], args) == -1) {
-                        write(pipefd[1], "1", 1);
-                        close(pipefd[1]);    /* reader will see EOF */
-                        fprintf(stderr, "bash: %s: command not found\n", args[0]);
-                        /* exit() is unreliable here, so _exit must be used */
-                        _exit(EXIT_FAILURE);
-                    } else {
-                        write(pipefd[1], "0", 1);
-                        close(pipefd[1]);
-                    }
-                }
-                _exit(EXIT_SUCCESS);
-            } else {    /* pid > 0: parent process */
-                close(pipefd[1]);    /* close unused write end of pipe */
-                read(pipefd[0], &pipech, 1);
-                close(pipefd[0]);
-                return_value = (pipech == '1') ? -1 : 0;
-                wait(0);    /* wait for child */
-            }
+        if (!args[0]) {
+            continue;
         }
-        free_args(args);
+        /* if the command doesn't start with '-' or '.', then it's a built-in command */
+        if (args[0][0] != '-' && args[0][0] != '.') {
+            run_built_in_cmd(argc, args);
+        } else {    /* otherwise fork and execvp */
+            run_system_or_user_cmd(pipefd);
+        }
+
+        free_args();
     }    /* end while (1), the main loop */
 
     return 0;
+}
+
+static void print_promt(const char *prompt, const char *hostname)
+{
+    char *cwd, *tmp_cwd;
+
+    cwd = getcwd(NULL, 0);
+    tmp_cwd = strdup(cwd);
+    printf("[%s@%s:%s] %s", getenv("USER"), hostname, basename(tmp_cwd), prompt);
+    free(cwd);
+}
+
+static void process_ctrl_d(void)
+{
+    int ch = getchar();
+    if (ch == EOF) {    /* Ctrl-D to exit */
+        clean_up();
+        printf("\nexit dksh by Ctrl-D\n");
+        my_exit();
+    } else {    /* if the first char is not EOF, then put it back into the STDIN stream */
+        ungetc(ch, stdin);
+    }
+}
+
+static int is_same_command(int hist_count)
+{
+    return hist_count > 0 && strcmp(hist[hist_count - 1], input) == 0;
+}
+
+static void record_history(int *hist_count)
+{
+    /* ignore successive same commands */
+    if (is_same_command(*hist_count)) {
+        return;
+    }
+
+    if (!hist[*hist_count]) {
+        hist[*hist_count] = malloc((strlen(input) + 1) * sizeof(char));
+        if (!hist[*hist_count]) {
+            perror("malloc");
+            clean_up();
+            exit(EXIT_FAILURE);
+        }
+    } else {
+        char *tmp_hist = hist[*hist_count];
+        hist[*hist_count] = realloc(tmp_hist, (strlen(input) + 1) * sizeof(char));
+        if (!hist[*hist_count]) {
+            perror("realloc");
+            free(tmp_hist);
+            clean_up();
+            exit(EXIT_FAILURE);
+        }
+    }
+
+    strcpy(hist[*hist_count], input);
+    *hist_count = (*hist_count + 1) % HISTMAX;
 }
 
 static int get_args(const char *input)
@@ -164,7 +140,7 @@ static int get_args(const char *input)
 
         if ((args[i] = malloc(LINEMAX * sizeof(char))) == NULL) {
             /* if malloc fails */
-            free_args(args);
+            free_args();
             return 0;
         }
 
@@ -176,7 +152,7 @@ static int get_args(const char *input)
         args[i][j] = '\0';    /* terminate each argument with '\0' */
 
         if (++i > ARGMAX - 1) {    /* too many args */
-            free_args(args);
+            free_args();
             return 0;
         }
     }
@@ -184,14 +160,9 @@ static int get_args(const char *input)
     return i;    /* return the number of arguments */
 }
 
-static void free_args(char **args)
+static void free_args(void)
 {
     int i;
-
-    if (!args) {
-        return;
-    }
-
     for (i = 0; i < ARGMAX; i++) {
         if (args[i]) {
             free(args[i]);
@@ -200,14 +171,9 @@ static void free_args(char **args)
     }
 }
 
-static void free_hist(char **hist)
+static void free_hist(void)
 {
     int i;
-
-    if (!hist) {
-        return;
-    }
-
     for (i = 0; hist[i] != NULL; i++) {
         free(hist[i]);
         hist[i] = NULL;
@@ -215,11 +181,11 @@ static void free_hist(char **hist)
 }
 
 static void clean_up(void) {
-    free_args(args);
-    free_hist(hist);
+    free_args();
+    free_hist();
 }
 
-static void built_in(int argc, char **args)
+static void run_built_in_cmd(int argc, char **args)
 {
     if (strcmp(args[0], "help") == 0) {
         return_value = help();
@@ -270,8 +236,54 @@ static void built_in(int argc, char **args)
         return_value = undcl(argc, args);
     } else {
         /* if the command isn't built-in, then try execvp next time */
-        printf("dksh: %s: command not found...(try '-%s')\n", args[0], args[0]);
+        printf("dksh: %s: command not found... (try '-%s')\n", args[0], args[0]);
         return_value = -1;
+    }
+}
+
+static void run_system_or_user_cmd(int pipefd[2])
+{
+    pid_t pid;
+    char pipech;    /* represent the return_value, 0 or 1 */
+
+    if ((pid = fork()) < 0) {    /* if fork fails */
+        perror("fork");
+        clean_up();
+        exit(EXIT_FAILURE);
+    }
+    if (pid == 0) {    /* child process */
+        close(pipefd[0]);    /* close unused read end of pipe */
+        if (args[0][0] == '-') {    /* call Bash commands */
+            /* &args[0][1]: excluding the preceding '-' */
+            if (execvp(&args[0][1], args) == -1) {
+                write(pipefd[1], "1", 1);
+                close(pipefd[1]);    /* reader will see EOF */
+                fprintf(stderr, "bash: %s: command not found\n", &args[0][1]);
+                /* exit() is unreliable here, so _exit must be used */
+                _exit(EXIT_FAILURE);
+            } else {
+                write(pipefd[1], "0", 1);
+                close(pipefd[1]);
+            }
+        } else if (args[0][0] == '.') {    /* user's program ("./<program name>") */
+            if (execvp(args[0], args) == -1) {
+                write(pipefd[1], "1", 1);
+                close(pipefd[1]);    /* reader will see EOF */
+                fprintf(stderr, "bash: %s: command not found\n", args[0]);
+                /* exit() is unreliable here, so _exit must be used */
+                _exit(EXIT_FAILURE);
+            } else {
+                write(pipefd[1], "0", 1);
+                close(pipefd[1]);
+            }
+        }
+        _exit(EXIT_SUCCESS);
+    } else {    /* pid > 0: parent process */
+        close(pipefd[1]);    /* close unused write end of pipe */
+        read(pipefd[0], &pipech, 1);
+        close(pipefd[0]);
+        return_value = (pipech == '1') ? -1 : 0;
+        wait(0);    /* wait for child */
     }
 }
 

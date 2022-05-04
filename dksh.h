@@ -36,11 +36,16 @@ int undcl(int, char **);
 void my_exit(void);
 
 /* prototypes for file static functions */
+static void print_promt(const char *, const char *);    /* print the prompt */
+static void process_ctrl_d(void);    /* Ctrl-D to exit */
+static int is_same_command(int);    /* check if it is the same command */
+static void record_history(int *);    /* record the command history */
 static int get_args(const char *);    /* parse the input to get args */
-static void free_args(char **);    /* free the memory of args */
-static void free_hist(char **);    /* free the memory of hist */
+static void free_args(void);    /* free the memory of args */
+static void free_hist(void);    /* free the memory of hist */
 static void clean_up(void);    /* free the memory of args and hist */
-static void built_in(int, char **);    /* dksh built-in commands */
+static void run_built_in_cmd(int, char **);    /* run dksh built-in commands */
+static void run_system_or_user_cmd(int [2]);    /* run symtem or user's commands */
 static void ignore_signal(void);    /* ignore some signals */
 
 /* file static variables */

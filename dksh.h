@@ -36,6 +36,9 @@ int undcl(int, char **);
 void my_exit(void);
 
 /* prototypes for file static functions */
+static void ignore_signal(void);    /* ignore some signals */
+static void handle_sigchld(void);    /* handle SIGCHLD signal */
+static void do_handle_sigchld(int);    /* handle SIGCHLD signal */
 static void print_promt(const char *, const char *);    /* print the prompt */
 static void process_ctrl_d(void);    /* Ctrl-D to exit */
 static int is_same_command(int);    /* check if it is the same command */
@@ -46,7 +49,6 @@ static void free_hist(void);    /* free the memory of hist */
 static void clean_up(void);    /* free the memory of args and hist */
 static void run_built_in_cmd(int, char **);    /* run dksh built-in commands */
 static void run_system_or_user_cmd(int [2]);    /* run symtem or user's commands */
-static void ignore_signal(void);    /* ignore some signals */
 
 /* file static variables */
 static char input[LINEMAX];

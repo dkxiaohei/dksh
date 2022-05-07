@@ -5,6 +5,7 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <signal.h>
+#include <errno.h>
 #include <libgen.h>
 
 #include "dksh.h"
@@ -29,14 +30,14 @@ int main(void)
         exit(EXIT_FAILURE);
     }
 
+    /* ignore SIGINT (Ctrl-C), SIGQUIT (Ctrl-\) and SIGTSTP (Ctrl-Z) */
+    ignore_signal();
+
+    /* handle SIGCHLD, get noted about the termination of the background command */
+    handle_sigchld();
+
     /* main loop */
     while (1) {
-        /* ignore SIGINT (Ctrl-C), SIGQUIT (Ctrl-\) and SIGTSTP (Ctrl-Z) */
-        ignore_signal();
-
-        /* TODO: handle SIGCHLD here */
-        /* get noted about the termination of the background command */
-
         print_promt(prompt, hostname);
         process_ctrl_d();
 
@@ -63,6 +64,41 @@ int main(void)
     }    /* end while (1), the main loop */
 
     return 0;
+}
+
+static void ignore_signal(void)
+{
+    if (signal(SIGINT, SIG_IGN) == SIG_ERR) {
+        fprintf(stderr, "Cannot ignore SIGINT!\n");
+        exit(EXIT_FAILURE);
+    }
+    if (signal(SIGQUIT, SIG_IGN) == SIG_ERR) {
+        fprintf(stderr, "Cannot ignore SIGQUIT!\n");
+        exit(EXIT_FAILURE);
+    }
+    if (signal(SIGTSTP, SIG_IGN) == SIG_ERR) {
+        fprintf(stderr, "Cannot ignore SIGTSTP!\n");
+        exit(EXIT_FAILURE);
+    }
+}
+
+static void handle_sigchld(void)
+{
+    struct sigaction sa;
+    sa.sa_handler = &do_handle_sigchld;
+    sigemptyset(&sa.sa_mask);
+    sa.sa_flags = SA_RESTART | SA_NOCLDSTOP;
+    if (sigaction(SIGCHLD, &sa, 0) == -1) {
+        perror("sigaction");
+        exit(EXIT_FAILURE);
+    }
+}
+
+static void do_handle_sigchld(int sig)
+{
+    int saved_errno = errno;
+    while (waitpid((pid_t)(-1), 0, WNOHANG) > 0) {}
+    errno = saved_errno;
 }
 
 static void print_promt(const char *prompt, const char *hostname)
@@ -284,21 +320,5 @@ static void run_system_or_user_cmd(int pipefd[2])
         close(pipefd[0]);
         return_value = (pipech == '1') ? -1 : 0;
         wait(0);    /* wait for child */
-    }
-}
-
-static void ignore_signal(void)
-{
-    if (signal(SIGINT, SIG_IGN) == SIG_ERR) {
-        fprintf(stderr, "Cannot ignore SIGINT!\n");
-        exit(EXIT_FAILURE);
-    }
-    if (signal(SIGQUIT, SIG_IGN) == SIG_ERR) {
-        fprintf(stderr, "Cannot ignore SIGQUIT!\n");
-        exit(EXIT_FAILURE);
-    }
-    if (signal(SIGTSTP, SIG_IGN) == SIG_ERR) {
-        fprintf(stderr, "Cannot ignore SIGTSTP!\n");
-        exit(EXIT_FAILURE);
     }
 }

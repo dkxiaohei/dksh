@@ -97,7 +97,10 @@ static void handle_sigchld(void)
 static void do_handle_sigchld(int sig)
 {
     int saved_errno = errno;
-    while (waitpid((pid_t)(-1), 0, WNOHANG) > 0) {}
+    pid_t pid;
+    while ((pid = waitpid((pid_t)(-1), 0, WNOHANG)) > 0) {
+        printf("Child process [%d] has terminated\n", pid);
+    }
     errno = saved_errno;
 }
 
@@ -160,6 +163,7 @@ static void record_history(int *hist_count)
 static int get_args(const char *input)
 {
     int i = 0, j;
+    background = FALSE;
 
     if (!input) {
         return 0;
@@ -169,7 +173,6 @@ static int get_args(const char *input)
         while (*input == ' ') {    /* omit the preceding blank(s) */
             input++;
         }
-
         if (*input == '\n') {    /* only support one-line command */
             break;
         }
@@ -191,6 +194,12 @@ static int get_args(const char *input)
             free_args();
             return 0;
         }
+    }
+
+    if (args[i-1] != NULL && strcmp(args[i-1], "&") == 0) {
+        background = TRUE;
+        args[i-1] = NULL;
+        i--;
     }
 
     return i;    /* return the number of arguments */
@@ -295,8 +304,7 @@ static void run_system_or_user_cmd(int pipefd[2])
                 write(pipefd[1], "1", 1);
                 close(pipefd[1]);    /* reader will see EOF */
                 fprintf(stderr, "bash: %s: command not found\n", &args[0][1]);
-                /* exit() is unreliable here, so _exit must be used */
-                _exit(EXIT_FAILURE);
+                _exit(EXIT_FAILURE); /* exit() is unreliable here, so _exit must be used */
             } else {
                 write(pipefd[1], "0", 1);
                 close(pipefd[1]);
@@ -306,8 +314,7 @@ static void run_system_or_user_cmd(int pipefd[2])
                 write(pipefd[1], "1", 1);
                 close(pipefd[1]);    /* reader will see EOF */
                 fprintf(stderr, "bash: %s: command not found\n", args[0]);
-                /* exit() is unreliable here, so _exit must be used */
-                _exit(EXIT_FAILURE);
+                _exit(EXIT_FAILURE); /* exit() is unreliable here, so _exit must be used */
             } else {
                 write(pipefd[1], "0", 1);
                 close(pipefd[1]);
@@ -316,9 +323,11 @@ static void run_system_or_user_cmd(int pipefd[2])
         _exit(EXIT_SUCCESS);
     } else {    /* pid > 0: parent process */
         close(pipefd[1]);    /* close unused write end of pipe */
-        read(pipefd[0], &pipech, 1);
+        if (!background) {
+            read(pipefd[0], &pipech, 1);
+            return_value = (pipech == '1') ? -1 : 0;
+            wait(0);    /* wait for child process */
+        }
         close(pipefd[0]);
-        return_value = (pipech == '1') ? -1 : 0;
-        wait(0);    /* wait for child */
     }
 }

@@ -55,5 +55,6 @@ static char input[LINEMAX];
 static char *args[ARGMAX];
 static char *hist[HISTMAX];
 static int return_value;    /* echo $? */
+static int background;    /* run cmd in the background */
 
 #endif  /* DKSH_H */

@@ -232,7 +232,7 @@ static void clean_up(void) {
     free_hist();
 }
 
-static void run_built_in_cmd(int argc, char **args)
+static void do_run_built_in_cmd(int argc, char **args)
 {
     if (strcmp(args[0], "help") == 0) {
         return_value = help();
@@ -285,6 +285,25 @@ static void run_built_in_cmd(int argc, char **args)
         /* if the command isn't built-in, then try execvp next time */
         printf("dksh: %s: command not found... (try '-%s')\n", args[0], args[0]);
         return_value = -1;
+    }
+}
+
+static void run_built_in_cmd(int argc, char **args)
+{
+    pid_t pid;
+
+    if ((pid = fork()) < 0) {
+        perror("fork");
+        clean_up();
+        exit(EXIT_FAILURE);
+    }
+    if (pid == 0) {    /* child process */
+        do_run_built_in_cmd(argc, args);
+        _exit(0);
+    } else {    /* pid > 0: parent process */
+        if (!background) {
+            wait(0);    /* wait for child process */
+        }
     }
 }
 

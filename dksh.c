@@ -292,6 +292,11 @@ static void run_built_in_cmd(int argc, char **args)
 {
     pid_t pid;
 
+    if (!background) {
+        do_run_built_in_cmd(argc, args);
+        return;
+    }
+
     if ((pid = fork()) < 0) {
         perror("fork");
         clean_up();
@@ -299,11 +304,8 @@ static void run_built_in_cmd(int argc, char **args)
     }
     if (pid == 0) {    /* child process */
         do_run_built_in_cmd(argc, args);
-        _exit(0);
+        _exit(EXIT_SUCCESS);
     } else {    /* pid > 0: parent process */
-        if (!background) {
-            wait(0);    /* wait for child process */
-        }
     }
 }
 

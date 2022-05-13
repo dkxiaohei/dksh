@@ -288,6 +288,11 @@ static void do_run_built_in_cmd(int argc, char **args)
     }
 }
 
+static void write_char(int fd, char c)
+{
+    write(fd, &c, 1);
+}
+
 static void run_built_in_cmd(int argc, char **args)
 {
     pid_t pid;
@@ -324,22 +329,22 @@ static void run_system_or_user_cmd(int pipefd[2])
         if (args[0][0] == '-') {    /* call Bash commands */
             /* &args[0][1]: excluding the preceding '-' */
             if (execvp(&args[0][1], args) == -1) {
-                write(pipefd[1], "1", 1);
+                write_char(pipefd[1], '1');
                 close(pipefd[1]);    /* reader will see EOF */
                 fprintf(stderr, "bash: %s: command not found\n", &args[0][1]);
                 _exit(EXIT_FAILURE); /* exit() is unreliable here, so _exit must be used */
             } else {
-                write(pipefd[1], "0", 1);
+                write_char(pipefd[1], '0');
                 close(pipefd[1]);
             }
         } else if (args[0][0] == '.') {    /* user's program ("./<program name>") */
             if (execvp(args[0], args) == -1) {
-                write(pipefd[1], "1", 1);
+                write_char(pipefd[1], '1');
                 close(pipefd[1]);    /* reader will see EOF */
                 fprintf(stderr, "bash: %s: command not found\n", args[0]);
                 _exit(EXIT_FAILURE); /* exit() is unreliable here, so _exit must be used */
             } else {
-                write(pipefd[1], "0", 1);
+                write_char(pipefd[1], '0');
                 close(pipefd[1]);
             }
         }
@@ -348,7 +353,7 @@ static void run_system_or_user_cmd(int pipefd[2])
         close(pipefd[1]);    /* close unused write end of pipe */
         if (!background) {
             read(pipefd[0], &pipech, 1);
-            return_value = (pipech == '1') ? -1 : 0;
+            return_value = (pipech == '0') ? 0 : -1;
             wait(0);    /* wait for child process */
         }
         close(pipefd[0]);

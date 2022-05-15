@@ -17,8 +17,6 @@ int main(void)
 {
     uid_t uid;
     char hostname[32] = {'\0'}, *prompt;
-    /* pipe (IPC): child process passes the return_value to parent process */
-    int pipefd[2];
     int argc, hist_count = 0;
 
     gethostname(hostname, (size_t)32);
@@ -26,11 +24,6 @@ int main(void)
     prompt = (uid = getuid()) == 0 ? "# " : "$ ";
     setuid(uid);
     setgid(getgid());
-
-    if (pipe(pipefd) != 0) {
-        perror("pipe");
-        exit(EXIT_FAILURE);
-    }
 
     /* ignore SIGINT (Ctrl-C), SIGQUIT (Ctrl-\) and SIGTSTP (Ctrl-Z) */
     ignore_signal();
@@ -58,8 +51,8 @@ int main(void)
         /* if the command doesn't start with '-' or '.', then it's a built-in command */
         if (args[0][0] != '-' && args[0][0] != '.') {
             run_built_in_cmd(argc, args);
-        } else {    /* otherwise fork and execvp */
-            run_system_or_user_cmd(pipefd);
+        } else {    /* otherwise it's a system command or user's command */
+            run_system_or_user_cmd();
         }
 
         free_args();
@@ -290,7 +283,9 @@ static void do_run_built_in_cmd(int argc, char **args)
 
 static void write_char(int fd, char c)
 {
-    write(fd, &c, 1);
+    if (write(fd, &c, 1) < 0) {
+        perror("write");
+    }
 }
 
 static void run_built_in_cmd(int argc, char **args)
@@ -311,13 +306,20 @@ static void run_built_in_cmd(int argc, char **args)
         do_run_built_in_cmd(argc, args);
         _exit(EXIT_SUCCESS);
     } else {    /* pid > 0: parent process */
+        /* do nothing */
     }
 }
 
-static void run_system_or_user_cmd(int pipefd[2])
+static void run_system_or_user_cmd(void)
 {
+    int pipefd[2]; /* child process passes the return_value to parent process */
     pid_t pid;
-    char pipech;    /* represent the return_value, 0 or 1 */
+    char ch;
+
+    if (pipe(pipefd) != 0) {
+        perror("pipe");
+        exit(EXIT_FAILURE);
+    }
 
     if ((pid = fork()) < 0) {    /* if fork fails */
         perror("fork");
@@ -327,35 +329,26 @@ static void run_system_or_user_cmd(int pipefd[2])
     if (pid == 0) {    /* child process */
         close(pipefd[0]);    /* close unused read end of pipe */
         if (args[0][0] == '-') {    /* call Bash commands */
-            /* &args[0][1]: excluding the preceding '-' */
-            if (execvp(&args[0][1], args) == -1) {
-                write_char(pipefd[1], '1');
-                close(pipefd[1]);    /* reader will see EOF */
-                fprintf(stderr, "bash: %s: command not found\n", &args[0][1]);
-                _exit(EXIT_FAILURE); /* exit() is unreliable here, so _exit must be used */
-            } else {
-                write_char(pipefd[1], '0');
-                close(pipefd[1]);
-            }
-        } else if (args[0][0] == '.') {    /* user's program ("./<program name>") */
-            if (execvp(args[0], args) == -1) {
-                write_char(pipefd[1], '1');
-                close(pipefd[1]);    /* reader will see EOF */
-                fprintf(stderr, "bash: %s: command not found\n", args[0]);
-                _exit(EXIT_FAILURE); /* exit() is unreliable here, so _exit must be used */
-            } else {
-                write_char(pipefd[1], '0');
-                close(pipefd[1]);
-            }
+            ++args[0];    /* omit the preceding '-' */
         }
+        if (execvp(args[0], args) == -1) {
+            write_char(pipefd[1], '1');
+            close(pipefd[1]);    /* reader will see EOF */
+            fprintf(stderr, "dksh: bash: %s: command not found\n", args[0]);
+            _exit(EXIT_FAILURE); /* exit() is unreliable here, so _exit must be used */
+        }
+        write_char(pipefd[1], '0');
+        close(pipefd[1]);    /* reader will see EOF */
         _exit(EXIT_SUCCESS);
     } else {    /* pid > 0: parent process */
         close(pipefd[1]);    /* close unused write end of pipe */
-        if (!background) {
-            read(pipefd[0], &pipech, 1);
-            return_value = (pipech == '0') ? 0 : -1;
-            wait(0);    /* wait for child process */
+        if (read(pipefd[0], &ch, 1) < 0) {
+            perror("read");
         }
         close(pipefd[0]);
+        return_value = '0' - ch;
+        if (!background) {
+            wait(0);    /* wait for child process */
+        }
     }
 }

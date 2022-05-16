@@ -314,7 +314,7 @@ static void run_system_or_user_cmd(void)
 {
     int pipefd[2]; /* child process passes the return_value to parent process */
     pid_t pid;
-    char ch;
+    char ch = 0;
 
     if (pipe(pipefd) != 0) {
         perror("pipe");
@@ -332,21 +332,18 @@ static void run_system_or_user_cmd(void)
             ++args[0];    /* omit the preceding '-' */
         }
         if (execvp(args[0], args) == -1) {
-            write_char(pipefd[1], '1');
+            write_char(pipefd[1], -1);
             close(pipefd[1]);    /* reader will see EOF */
             fprintf(stderr, "dksh: bash: %s: command not found\n", args[0]);
             _exit(EXIT_FAILURE); /* exit() is unreliable here, so _exit must be used */
         }
-        write_char(pipefd[1], '0');
-        close(pipefd[1]);    /* reader will see EOF */
-        _exit(EXIT_SUCCESS);
     } else {    /* pid > 0: parent process */
         close(pipefd[1]);    /* close unused write end of pipe */
         if (read(pipefd[0], &ch, 1) < 0) {
             perror("read");
         }
         close(pipefd[0]);
-        return_value = '0' - ch;
+        return_value = ch;
         if (!background) {
             wait(0);    /* wait for child process */
         }

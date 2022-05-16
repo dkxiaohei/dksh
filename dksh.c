@@ -225,60 +225,81 @@ static void clean_up(void) {
     free_hist();
 }
 
-static void do_run_built_in_cmd(int argc, char **args)
+static int do_run_built_in_cmd(int argc, char **args)
 {
-    if (strcmp(args[0], "help") == 0) {
-        return_value = help();
-    } else if (strcmp(args[0], "exit") == 0) {
+    if (strcmp(args[0], "exit") == 0) {
         clean_up();
         my_exit();
-    } else if (strcmp(args[0], "pwd") == 0) {
-        return_value = pwd();
-    } else if (strcmp(args[0], "cd") == 0) {
-        return_value = cd(args);
-    } else if (strcmp(args[0], "echo") == 0) {
-        return_value = echo(argc, args, return_value);
-    } else if (strcmp(args[0], "cat") == 0) {
-        return_value = cat(argc, args);
-    } else if (strcmp(args[0], "ls") == 0) {
-        return_value = ls(argc, args);
-    } else if (strcmp(args[0], "mkdir") == 0) {
-        return_value = my_mkdir(argc, args);
-    } else if (strcmp(args[0], "rmdir") == 0) {
-        return_value = my_rmdir(argc, args);
-    } else if (strcmp(args[0], "rm") == 0) {
-        return_value = rm(argc, args);
-    } else if (strcmp(args[0], "date") == 0) {
-        return_value = date();
-    } else if (strcmp(args[0], "chmod") == 0) {
-        return_value = my_chmod(argc, args);
-    } else if (strcmp(args[0], "wc") == 0) {
-        return_value = wc(argc, args);
-    } else if (strcmp(args[0], "kill") == 0) {
-        return_value = my_kill(argc, args);
-    } else if (strcmp(args[0], "history") == 0) {
-        return_value = history(hist);
-    } else if (strcmp(args[0], "who") == 0) {
-        return_value = who(argc, args);
-    } else if (strcmp(args[0], "grep") == 0) {
-        return_value = grep(argc, args);
-    } else if (strcmp(args[0], "mv") == 0) {
-        return_value = mv(argc, args);
-    } else if (strcmp(args[0], "tee") == 0) {
-        return_value = tee(argc, args);
-    } else if (strcmp(args[0], "time") == 0) {
-        return_value = my_time(argc, args);
-    } else if (strcmp(args[0], "more") == 0) {
-        return_value = more(argc, args);
-    } else if (strcmp(args[0], "dcl") == 0) {
-        return_value = my_dcl(argc, args);
-    } else if (strcmp(args[0], "undcl") == 0) {
-        return_value = undcl(argc, args);
-    } else {
-        /* if the command isn't built-in, then try execvp next time */
-        printf("dksh: %s: command not found... (try '-%s')\n", args[0], args[0]);
-        return_value = -1;
     }
+    if (strcmp(args[0], "help") == 0) {
+        return help();
+    }
+    if (strcmp(args[0], "pwd") == 0) {
+        return pwd();
+    }
+    if (strcmp(args[0], "cd") == 0) {
+        return cd(args);
+    }
+    if (strcmp(args[0], "echo") == 0) {
+        return echo(argc, args, return_value);
+    }
+    if (strcmp(args[0], "cat") == 0) {
+        return cat(argc, args);
+    }
+    if (strcmp(args[0], "ls") == 0) {
+        return ls(argc, args);
+    }
+    if (strcmp(args[0], "mkdir") == 0) {
+        return my_mkdir(argc, args);
+    }
+    if (strcmp(args[0], "rmdir") == 0) {
+        return my_rmdir(argc, args);
+    }
+    if (strcmp(args[0], "rm") == 0) {
+        return rm(argc, args);
+    }
+    if (strcmp(args[0], "date") == 0) {
+        return date();
+    }
+    if (strcmp(args[0], "chmod") == 0) {
+        return my_chmod(argc, args);
+    }
+    if (strcmp(args[0], "wc") == 0) {
+        return wc(argc, args);
+    }
+    if (strcmp(args[0], "kill") == 0) {
+        return my_kill(argc, args);
+    }
+    if (strcmp(args[0], "history") == 0) {
+        return history(hist);
+    }
+    if (strcmp(args[0], "who") == 0) {
+        return who(argc, args);
+    }
+    if (strcmp(args[0], "grep") == 0) {
+        return grep(argc, args);
+    }
+    if (strcmp(args[0], "mv") == 0) {
+        return mv(argc, args);
+    }
+    if (strcmp(args[0], "tee") == 0) {
+        return tee(argc, args);
+    }
+    if (strcmp(args[0], "time") == 0) {
+        return my_time(argc, args);
+    }
+    if (strcmp(args[0], "more") == 0) {
+        return more(argc, args);
+    }
+    if (strcmp(args[0], "dcl") == 0) {
+        return my_dcl(argc, args);
+    }
+    if (strcmp(args[0], "undcl") == 0) {
+        return undcl(argc, args);
+    }
+    /* if the command isn't built-in, then try execvp next time */
+    printf("dksh: %s: command not found... (try '-%s')\n", args[0], args[0]);
+    return -1;
 }
 
 static void write_char(int fd, char c)
@@ -290,11 +311,18 @@ static void write_char(int fd, char c)
 
 static void run_built_in_cmd(int argc, char **args)
 {
+    int pipefd[2];    /* child process passes the return_value to parent process */
     pid_t pid;
+    char ch = 0;
 
     if (!background) {
-        do_run_built_in_cmd(argc, args);
+        return_value = do_run_built_in_cmd(argc, args);
         return;
+    }
+
+    if (pipe(pipefd) != 0) {
+        perror("pipe");
+        exit(EXIT_FAILURE);
     }
 
     if ((pid = fork()) < 0) {
@@ -303,16 +331,24 @@ static void run_built_in_cmd(int argc, char **args)
         exit(EXIT_FAILURE);
     }
     if (pid == 0) {    /* child process */
-        do_run_built_in_cmd(argc, args);
+        close(pipefd[0]);
+        return_value = do_run_built_in_cmd(argc, args);    /* the forked return_value */
+        write_char(pipefd[1], return_value);
+        close(pipefd[1]);
         _exit(EXIT_SUCCESS);
     } else {    /* pid > 0: parent process */
-        /* do nothing */
+        close(pipefd[1]);
+        if (read(pipefd[0], &ch, 1) < 0) {
+            perror("read");
+        }
+        close(pipefd[0]);
+        return_value = ch;
     }
 }
 
 static void run_system_or_user_cmd(void)
 {
-    int pipefd[2]; /* child process passes the return_value to parent process */
+    int pipefd[2];    /* child process passes the return_value to parent process */
     pid_t pid;
     char ch = 0;
 

@@ -49,7 +49,7 @@ static void free_hist(void);    /* free the memory of hist */
 static void clean_up(void);    /* free the memory of args and hist */
 static void write_char(int, char);    /* write a char to a file descriptor */
 static void run_built_in_cmd(int, char **);    /* run dksh built-in commands */
-static void do_run_built_in_cmd(int, char **);    /* run dksh built-in commands */
+static int do_run_built_in_cmd(int, char **);    /* run dksh built-in commands */
 static void run_system_or_user_cmd(void);    /* run symtem or user's commands */
 
 /* file static variables */

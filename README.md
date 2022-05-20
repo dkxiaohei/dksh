@@ -39,6 +39,10 @@ Hopefully, 'dksh' will grow into a possible substitution for Bash.
 
     (PS. Putting a '-' before a command will call the Bash built-in commands.)
 
+### Special Characters
+
+    1. '&': background
+
 ### Compile:
 
 This repository, which is compatible with ANSI C, has been tested on **CentOS**, **Ubuntu** and **macOS**.
@@ -155,6 +159,5 @@ This repository, which is compatible with ANSI C, has been tested on **CentOS**,
     2. support '>>' (IO redirection, output, append-only)
     3. support '<' (IO redirection, input)
     4. support '<<' (IO redirection, input, here document)
-    5. support '&' (background)
-    6. support '|' (pipeline)
+    5. support '|' (pipeline)
 

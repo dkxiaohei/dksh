@@ -29,7 +29,7 @@ Hopefully, 'dksh' will grow into a possible substitution for Bash.
     15. who
     16. history
     17. more
-    18. grep (-v -n -c -H -h -i -o -q -b -L -l -m <num> --label <LABEL> | -vncHhioqbLlm <num> --label <LABEL>)
+    18. grep (-v -n -c -H -h -i -o -q -b -L -l -m <num> --label <LABEL> | -vncHhioqbLl -m <num> --label <LABEL>)
     19. mv
     20. tee (-a)
     21. time

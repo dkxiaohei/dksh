@@ -103,9 +103,15 @@ static int do_cat(FILE *fp)
         memset(buf, 0, sizeof(buf));
     }
 
-    if (fclose(fp) == EOF) {
-        perror("fclose");
-        return -1;
+    if (fp == stdin) {
+        clearerr(stdin);    /* prevent the EOF (Ctrl-D) from causing dksh to exit */
+    }
+
+    if (fp != stdin) {
+        if (fclose(fp) == EOF) {
+            perror("fclose");
+            return -1;
+        }
     }
 
     return 0;

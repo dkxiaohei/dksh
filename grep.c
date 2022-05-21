@@ -104,7 +104,7 @@ int grep(int argc, char **args)
 
     /* argc and args have been changed through the while body */
     if(argc < 1) {
-        printf("Usage: grep -v -n -c -H -h -i -o -q -b -L -l -m <num> --label <LABEL> pattern [file]\n");
+        printf("Usage: grep -vncHhioqbLl -m <num> --label <LABEL> pattern [file]\n");
         clean_up(buf);
         return 2;
     }
@@ -179,9 +179,13 @@ int grep(int argc, char **args)
 
     clean_up(buf);
 
+    if (fs == stdin) {
+        clearerr(stdin);    /* prevent the EOF (Ctrl-D) from causing dksh to exit */
+    }
+
     if (fs != stdin) {
         if (fclose(fs) == EOF) {
-            perror("close");
+            perror("fclose");
             return 2;
         }
     }

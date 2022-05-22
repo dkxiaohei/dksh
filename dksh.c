@@ -93,8 +93,9 @@ static void do_handle_sigchld(int sig)
 {
     int saved_errno = errno;
     pid_t pid;
+    char *msg = "\nChild process has terminated\n";
     while ((pid = waitpid((pid_t)(-1), 0, WNOHANG)) > 0) {
-        printf("Child process [%d] has terminated\n", pid);
+        write(1, msg, strlen(msg) + 1);
     }
     errno = saved_errno;
 }

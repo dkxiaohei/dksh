@@ -33,6 +33,7 @@ int my_time(int, char **);
 int more(int, char **);
 int my_dcl(int, char **);
 int undcl(int, char **);
+int my_sleep(int, char **);
 void my_exit(void);
 
 /* prototypes for file static functions */

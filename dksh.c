@@ -298,6 +298,9 @@ static int do_run_built_in_cmd(int argc, char **args)
     if (strcmp(args[0], "undcl") == 0) {
         return undcl(argc, args);
     }
+    if (strcmp(args[0], "sleep") == 0) {
+        return my_sleep(argc, args);
+    }
     /* if the command isn't built-in, then try execvp next time */
     printf("dksh: %s: command not found... (try '-%s')\n", args[0], args[0]);
     return -1;

@@ -4,7 +4,7 @@ This repository is inspired by [Yash: Yet another shell](https://www.samiam.org/
 
 'dksh' is a rudimentary shell which supports common Linux commands such as 'grep', 'ls', 'cat', 'wc' and so on.
 
-Till now, it has 23 built-in commands (and the number is still going up).
+Till now, it has 24 built-in commands (and the number is still going up).
 
 The goal of this project is to show the basics of Linux system programming.
 
@@ -35,7 +35,8 @@ Hopefully, 'dksh' will grow into a possible substitution for Bash.
     21. time
     22. dcl
     23. undcl
-    24. ./<user's program>
+    24. sleep <NUMBER>
+    25. ./<user's program>
 
     (PS. Putting a '-' before a command will call the Bash built-in commands.)
 
@@ -151,7 +152,10 @@ This repository, which is compatible with ANSI C, has been tested on **CentOS**,
     23. undcl:
         (1) undcl: convert word description to declaration
 
-    24. ./<user's program>:
+    24. sleep:
+        (1) sleep <NUMBER>: sleep for a specified number of seconds
+
+    25. ./<user's program>:
         (1) ./<user's program>
 
 ### Todo:

@@ -2,7 +2,7 @@
 
 int help(void)
 {
-    printf("\n--- dksh commands (23 + 1) ---\n"
+    printf("\n--- dksh commands ---\n"
             "help\n"
             "exit (Ctrl-D)\n"
             "pwd\n"
@@ -26,6 +26,7 @@ int help(void)
             "tee (-a)\n"
             "dcl\n"
             "undcl\n"
+            "sleep <NUMBER>\n"
             "./<user's program>\n\n");
 
     return 0;

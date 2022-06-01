@@ -306,27 +306,13 @@ static int do_run_built_in_cmd(int argc, char **args)
     return -1;
 }
 
-static void write_char(int fd, char c)
-{
-    if (write(fd, &c, 1) < 0) {
-        perror("write");
-    }
-}
-
 static void run_built_in_cmd(int argc, char **args)
 {
-    int pipefd[2];    /* child process passes the return_value to parent process */
     pid_t pid;
-    char ch = 0;
 
     if (!background) {
         return_value = do_run_built_in_cmd(argc, args);
         return;
-    }
-
-    if (pipe(pipefd) != 0) {
-        perror("pipe");
-        exit(EXIT_FAILURE);
     }
 
     if ((pid = fork()) < 0) {
@@ -335,31 +321,16 @@ static void run_built_in_cmd(int argc, char **args)
         exit(EXIT_FAILURE);
     }
     if (pid == 0) {    /* child process */
-        close(pipefd[0]);
-        return_value = do_run_built_in_cmd(argc, args);    /* the forked return_value */
-        write_char(pipefd[1], return_value);
-        close(pipefd[1]);
+        do_run_built_in_cmd(argc, args);
         _exit(EXIT_SUCCESS);
     } else {    /* pid > 0: parent process */
-        close(pipefd[1]);
-        if (read(pipefd[0], &ch, 1) < 0) {
-            perror("read");
-        }
-        close(pipefd[0]);
-        return_value = ch;
+        /* do nothing */
     }
 }
 
 static void run_system_or_user_cmd(void)
 {
-    int pipefd[2];    /* child process passes the return_value to parent process */
     pid_t pid;
-    char ch = 0;
-
-    if (pipe(pipefd) != 0) {
-        perror("pipe");
-        exit(EXIT_FAILURE);
-    }
 
     if ((pid = fork()) < 0) {    /* if fork fails */
         perror("fork");
@@ -367,23 +338,14 @@ static void run_system_or_user_cmd(void)
         exit(EXIT_FAILURE);
     }
     if (pid == 0) {    /* child process */
-        close(pipefd[0]);    /* close unused read end of pipe */
         if (args[0][0] == '-') {    /* call Bash commands */
             ++args[0];    /* omit the preceding '-' */
         }
         if (execvp(args[0], args) == -1) {
-            write_char(pipefd[1], -1);
-            close(pipefd[1]);    /* reader will see EOF */
             fprintf(stderr, "dksh: bash: %s: command not found\n", args[0]);
             _exit(EXIT_FAILURE); /* exit() is unreliable here, so _exit must be used */
         }
     } else {    /* pid > 0: parent process */
-        close(pipefd[1]);    /* close unused write end of pipe */
-        if (read(pipefd[0], &ch, 1) < 0) {
-            perror("read");
-        }
-        close(pipefd[0]);
-        return_value = ch;
         if (!background) {
             wait(0);    /* wait for child process */
         }
